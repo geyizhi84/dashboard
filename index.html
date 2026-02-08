@@ -3,97 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Global Asset Terminal</title>
+    <title>Sovereign Terminal | Market Intelligence</title>
     <style>
-        :root {
-            --bg: #06090f;
-            --panel: #131722;
-            --accent: #2962ff;
-            --border: #2a2e39;
+        :root { --bg: #06090f; --accent: #2962ff; --panel: #131722; }
+        body { background-color: var(--bg); color: #d1d4dc; font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .title { font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+        
+        /* EXPLICIT HEIGHTS PREVENT BLANK SCREENS */
+        .widget-container { 
+            background: var(--panel); 
+            border: 1px solid #2a2e39; 
+            border-radius: 4px; 
+            height: 500px; /* Fixed height is critical */
+            margin-bottom: 25px;
+            position: relative;
         }
-
-        body, html {
-            background-color: var(--bg);
-            color: #d1d4dc;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+        
+        .loading-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #434651; font-size: 12px; z-index: 0;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-
-        .brand {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: var(--accent);
-        }
-
-        .timestamp {
-            font-size: 12px;
-            color: #787b86;
-            font-family: "Courier New", Courier, monospace;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #d1d4dc;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            padding-left: 10px;
-            border-left: 3px solid var(--accent);
-        }
-
-        .widget-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-            height: 500px;
-        }
-
-        .performance-note {
-            font-size: 11px;
-            color: #787b86;
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .widget-card { height: 600px; }
-        }
+        
+        .section-label { font-size: 12px; font-weight: bold; color: #787b86; text-transform: uppercase; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
 
-<div class="container">
     <div class="header">
-        <div class="brand">SOVEREIGN TERMINAL</div>
-        <div class="timestamp" id="live-clock">SYSTEM ONLINE</div>
+        <div class="title">SOVEREIGN TERMINAL</div>
+        <div style="font-size: 12px; color: #787b86;" id="clock">UTC --:--:--</div>
     </div>
 
-    <section>
-        <div class="section-title">Global Macro & US Benchmarks</div>
-        <p class="performance-note">Performance data (1W, 1M, 3M, YTD, 1Y) available via interactive selection.</p>
-        <div class="widget-card">
-            <div class="tradingview-widget-container">
-                <div class="tradingview-widget-container__widget"></div>
+    <span class="section-label">Global Benchmarks</span>
+    <div class="widget-container">
+        <div class="loading-text">Connecting to Global Data Stream... (Check Ad-Blockers if this persists)</div>
+        <div class="tradingview-widget-container" style="height:100%; width:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+            {
+                "width": "100%", "height": "100%",
+                "symbolsGroups": [{
+                    "name": "Global Macro",
+                    "symbols": [
+                        {"name": "FOREXCOM:SPX500", "displayName": "S&P 500"},
+                        {"name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin"},
+                        {"name": "TVC:GOLD", "displayName": "Gold Spot"},
+                        {"name": "TVC:US10Y", "displayName": "US 10Y Yield"}
+                    ]
+                }],
+                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+
+    <span class="section-label">Greater China Performance</span>
+    <div class="widget-container">
+        <div class="loading-text">Connecting to A-Share Data Stream...</div>
+        <div class="tradingview-widget-container" style="height:100%; width:100%;">
+            <div class="tradingview-widget-container__widget" style="height:100%; width:100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+            {
+                "width": "100%", "height": "100%",
+                "symbolsGroups": [{
+                    "name": "China Hub",
+                    "symbols": [
+                        {"name": "SHSE:000300", "displayName": "CSI 300 Index"},
+                        {"name": "HSI:HSI", "displayName": "Hang Seng Index"},
+                        {"name": "NASDAQ:HXC", "displayName": "Golden Dragon China"},
+                        {"name": "FX_IDC:USDCNH", "displayName": "USD/CNH"}
+                    ]
+                }],
+                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            document.getElementById('clock').innerText = "UTC " + new Date().toISOString().substr(11, 8);
+        }
+        setInterval(updateClock, 1000); updateClock();
+    </script>
+</body>
+</html>
