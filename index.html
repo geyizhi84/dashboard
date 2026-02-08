@@ -3,91 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global CIO Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header class="main-header">
-            <div class="logo">THE GLOBAL PULSE</div>
-            <div class="date-time">CIO MORNING BRIEFING | <span id="current-date"></span></div>
-            <div class="user-profile"><i class="fas fa-user-circle"></i></div>
-        </header>
+    <title>Global CIO Dashboard | Real-Time</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --up: #39d353;
+            --down: #f85149;
+        }
 
-        <section class="top-tier">
-            <div class="card pulse-card">
-                <h3>US EQUITIES</h3>
-                <div class="value">S&P 500: 5,123.30 <span class="trend up">+0.85%</span></div>
-                <div class="value">Nasdaq: 16,274.90 <span class="trend up">+1.10%</span></div>
-            </div>
-            <div class="card pulse-card">
-                <h3>FIXED INCOME</h3>
-                <div class="value">US 10Y Yield: 4.22% <span class="trend down">-2bps</span></div>
-                <div class="value">2Y/10Y Spread: -35bps</div>
-            </div>
-            <div class="card pulse-card">
-                <h3>COMMODITIES</h3>
-                <div class="value">Gold: $2,160.50 <span class="trend up">+0.20%</span></div>
-                <div class="value">Copper: $3.92 <span class="trend up">+0.60%</span></div>
-            </div>
-            <div class="card pulse-card">
-                <h3>VOL / CRYPTO</h3>
-                <div class="value">VIX: 14.20 <span class="trend down">-2.1%</span></div>
-                <div class="value">Bitcoin: $67,490 <span class="trend up">+2.1%</span></div>
-            </div>
-        </section>
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
 
-        <main class="content-grid">
-            <div class="card performance-section">
-                <h3>Asset Performance (Heatmap)</h3>
-                <div class="heatmap-placeholder">
-                    <div class="heatmap-header"><span>Ticker</span><span>1D</span><span>1W</span><span>1M</span><span>YTD</span></div>
-                    <div class="heatmap-row"><span>CSI 300</span><span class="bg-red"></span><span class="bg-green"></span><span class="bg-green"></span><span class="bg-red"></span></div>
-                    <div class="heatmap-row"><span>Hang Seng</span><span class="bg-red-light"></span><span class="bg-red"></span><span class="bg-green-light"></span><span class="bg-red"></span></div>
-                    <div class="heatmap-row"><span>USD/CNH</span><span class="bg-green-light"></span><span class="bg-green"></span><span class="bg-red-light"></span><span class="bg-green"></span></div>
-                    <div class="heatmap-row"><span>CSI Div Low Vol</span><span class="bg-green"></span><span class="bg-green"></span><span class="bg-green"></span><span class="bg-green"></span></div>
-                </div>
-                <div class="gauge-container">
-                    <div class="gauge-label">SPX / GOLD RATIO</div>
-                    <div class="gauge-value">2.37</div>
-                </div>
-            </div>
+        /* Fixed Header to prevent layout shift */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
 
-            <aside class="intelligence-summary">
-                <h3>Intelligence Summary</h3>
-                <div class="news-item">
-                    <span class="source">BLOOMBERG</span>
-                    <p>US-China Trade Talks show "Constructive" progress in Green Tech.</p>
-                    <a href="#" class="ext-link">Read More <i class="fas fa-external-link-alt"></i></a>
-                </div>
-                <div class="news-item">
-                    <span class="source">CAIXIN</span>
-                    <p>NFRA updates asset risk classification for Insurance institutions.</p>
-                    <a href="#" class="ext-link">Read More <i class="fas fa-external-link-alt"></i></a>
-                </div>
-                <div class="news-item">
-                    <span class="source">COINDESK</span>
-                    <p>Institutional USDC inflows hit 6-month high amid DeFi yield spikes.</p>
-                    <a href="#" class="ext-link">Read More <i class="fas fa-external-link-alt"></i></a>
-                </div>
-            </aside>
-        </main>
+        .logo { font-size: 1.2rem; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
 
-        <footer class="action-footer">
-            <div class="alert-box">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>ALERT: CSI Div Low Vol Index > 2-Sigma Move (YTD Allocation Review Required)</span>
-            </div>
-            <div class="actions">
-                <button class="btn btn-primary">Rebalance Portfolio</button>
-                <button class="btn">Export PDF Brief</button>
-            </div>
-        </footer>
-    </div>
+        /* The Grid: 4 columns for Global, 2/3 split for China/News */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: auto;
+            gap: 20px;
+        }
 
-    <script>
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString();
-    </script>
-</body>
-</html>
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        /* Top Tier Cards
