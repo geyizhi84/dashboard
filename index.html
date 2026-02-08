@@ -3,214 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Market Terminal</title>
+    <title>Sovereign Global Asset Terminal</title>
     <style>
         :root {
-            --bg-color: #06090f;
-            --panel-bg: #131722;
+            --bg: #06090f;
+            --panel: #131722;
             --accent: #2962ff;
             --border: #2a2e39;
         }
 
-        body {
-            background-color: var(--bg-color);
+        body, html {
+            background-color: var(--bg);
             color: #d1d4dc;
-            font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
 
         .header {
-            padding: 15px 25px;
-            background: var(--panel-bg);
-            border-bottom: 2px solid var(--accent);
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .terminal-logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.2rem; }
-
-        .dashboard-container {
-            padding: 0 20px 20px 20px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .section-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #787b86;
-            text-transform: uppercase;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
             margin-bottom: 10px;
-            display: block;
-            border-left: 3px solid var(--accent);
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #787b86;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #d1d4dc;
+            text-transform: uppercase;
+            margin-bottom: 12px;
             padding-left: 10px;
+            border-left: 3px solid var(--accent);
         }
 
-        .widget-wrapper {
-            background: var(--panel-bg);
+        .widget-card {
+            background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            height: 450px;
+            border-radius: 6px;
             overflow: hidden;
+            height: 500px;
         }
-    </style>
-</head>
-<body>
 
-    <div class="header">
-        <div class="terminal-logo">SOVEREIGN // CAPITAL HUB</div>
-        <div style="font-size: 12px; color: #787b86;">MARKET DATA: LIVE ACCESS</div>
-    </div>
-
-    <div class="tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-        "symbols": [
-            {"proName": "FOREXCOM:SPX500", "title": "S&P 500"},
-            {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
-            {"proName": "TVC:GOLD", "title": "Gold"},
-            {"proName": "TVC:US10Y", "title": "US 10Y Yield"}
-        ],
-        "showSymbolLogo": true,
-        "colorTheme": "dark",
-        "isTransparent": false,
-        "displayMode": "adaptive",
-        "locale": "en"
+        .performance-note {
+            font-size: 11px;
+            color: #787b86;
+            margin-top: -10px;
+            margin-bottom: 15px;
         }
-        </script>
-    </div>
 
-    <div class="dashboard-container">
-        
-        <div>
-            <span class="section-label">Global Macro & US Indices</span>
-            <div class="widget-wrapper">
-                <div class="tradingview-widget-container" style="height:100%;width:100%">
-                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
-                    {
-                    "width": "100%", "height": "100%",
-                    "symbolsGroups": [
-                        {
-                        "name": "Indices",
-                        "originalName": "Indices",
-                        "symbols": [
-                            {"name": "FOREXCOM:SPX500", "displayName": "S&P 500"},
-                            {"name": "FOREXCOM:NSXUSD", "displayName": "Nasdaq 100"},
-                            {"name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin"},
-                            {"name": "TVC:GOLD", "displayName": "Gold"}
-                        ]
-                        }
-                    ],
-                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
-                    }
-                    </script>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <span class="section-label">Greater China Equities</span>
-            <div class="widget-wrapper">
-                <div class="tradingview-widget-container" style="height:100%;width:100%">
-                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
-                    {
-                    "width": "100%", "height": "100%",
-                    "symbolsGroups": [
-                        {
-                        "name": "China Markets",
-                        "symbols": [
-                            {"name": "SHSE:000300", "displayName": "CSI 300 Index"},
-                            {"name": "HSI:HSI", "displayName": "Hang Seng Index"},
-                            {"name": "SHSE:000001", "displayName": "SSE Composite"},
-                            {"name": "NASDAQ:HXC", "displayName": "Golden Dragon China"}
-                        ]
-                        }
-                    ],
-                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
-                    }
-                    </script>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sovereign Multi-Period Performance</title>
-    <style>
-        body { background-color: #06090f; margin: 0; padding: 20px; font-family: sans-serif; }
-        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
-        .header { color: #2962ff; font-weight: 800; border-bottom: 2px solid #2962ff; padding-bottom: 10px; margin-bottom: 10px; }
-        .widget-box { background: #131722; border-radius: 4px; border: 1px solid #2a2e39; height: 600px; overflow: hidden; }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .widget-card { height: 600px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">GLOBAL ASSET PERFORMANCE TERMINAL</div>
-    
-    <div class="widget-box">
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
-            {
-              "width": "100%",
-              "height": "100%",
-              "symbolsGroups": [
-                {
-                  "name": "Equity & Macro",
-                  "symbols": [
-                    { "name": "FOREXCOM:SPX500", "displayName": "S&P 500" },
-                    { "name": "NASDAQ:QQQ", "displayName": "Nasdaq 100" },
-                    { "name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin" },
-                    { "name": "TVC:GOLD", "displayName": "Gold" }
-                  ]
-                },
-                {
-                  "name": "China Markets",
-                  "symbols": [
-                    { "name": "SHSE:000300", "displayName": "CSI 300 (A-Shares)" },
-                    { "name": "HSI:HSI", "displayName": "Hang Seng Index" },
-                    { "name": "NASDAQ:HXC", "displayName": "Golden Dragon China" }
-                  ]
-                }
-              ],
-              "showSymbolLogo": true,
-              "colorTheme": "dark",
-              "isTransparent": false,
-              "locale": "en",
-              "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
-              "plotLineColorFalling": "rgba(41, 98, 255, 1)",
-              "gridLineColor": "rgba(42, 46, 57, 0)",
-              "scaleFontColor": "rgba(209, 212, 220, 1)",
-              "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
-              "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
-              "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
-              "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
-              "symbolActiveColor": "rgba(41, 98, 255, 0.12)"
-            }
-            </script>
-        </div>
+    <div class="header">
+        <div class="brand">SOVEREIGN TERMINAL</div>
+        <div class="timestamp" id="live-clock">SYSTEM ONLINE</div>
     </div>
-</div>
 
-</body>
-</html>
+    <section>
+        <div class="section-title">Global Macro & US Benchmarks</div>
+        <p class="performance-note">Performance data (1W, 1M, 3M, YTD, 1Y) available via interactive selection.</p>
+        <div class="widget-card">
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
