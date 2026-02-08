@@ -3,205 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Global Terminal</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
+    <title>Sovereign Market Terminal</title>
     <style>
         :root {
-            --bg-color: #0a0e14;
-            --panel-bg: #141a21;
-            --border-color: #2a323d;
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
-            --up-color: #22c55e;
-            --down-color: #ef4444;
-            --accent: #38bdf8;
-            --warning: #fbbf24;
+            --bg-color: #06090f;
+            --panel-bg: #131722;
+            --accent: #2962ff;
+            --border: #2a2e39;
         }
 
-        body, html { 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 20px; 
+        body {
+            background-color: var(--bg-color);
+            color: #d1d4dc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Wall Street Header */
-        .header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding-bottom: 10px; border-bottom: 2px solid var(--accent);
+        .header {
+            padding: 15px 25px;
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .terminal-id { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.2rem; }
-        .market-status { font-size: 12px; color: var(--text-muted); font-family: 'Roboto Mono'; }
 
-        /* Sentiment Panel */
-        .panel { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; }
-        .panel-header { background: #1c252e; padding: 10px 15px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
-        
-        .sentiment-container { padding: 20px; display: grid; grid-template-columns: 1fr 180px; gap: 30px; align-items: center; }
-        .sentiment-bar { height: 10px; background: linear-gradient(to right, #ef4444, #fbbf24, #22c55e); position: relative; border-radius: 5px; }
-        #vix-pointer { width: 3px; height: 20px; background: white; position: absolute; top: -5px; transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .terminal-logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.2rem; }
 
-        /* Performance Tables */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { color: var(--text-muted); text-align: left; padding: 15px; font-weight: 400; border-bottom: 1px solid var(--border-color); }
-        td { padding: 15px; border-bottom: 1px solid #1c252e; font-family: 'Roboto Mono', monospace; }
-        .asset-name { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--accent); }
-        .pos { color: var(--up-color); }
-        .neg { color: var(--down-color); }
-        
-        /* Grid for Multi-Section */
-        .dashboard-sections { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 1024px) { .dashboard-sections { grid-template-columns: 1fr; } }
+        .dashboard-container {
+            padding: 0 20px 20px 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #787b86;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        .widget-wrapper {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            height: 450px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
     <div class="header">
-        <div class="terminal-id">SOVEREIGN // GLOBAL TERMINAL</div>
-        <div class="market-status" id="market-status-bar">SYSTEMS ONLINE | <span id="current-time"></span></div>
+        <div class="terminal-logo">SOVEREIGN // CAPITAL HUB</div>
+        <div style="font-size: 12px; color: #787b86;">MARKET DATA: LIVE ACCESS</div>
     </div>
 
-    <div class="panel">
-        <div class="panel-header">
-            <span>Market Sentiment & Volatility Regime</span>
-            <span id="sentiment-text" style="color: var(--accent)">NEUTRAL</span>
-        </div>
-        <div class="sentiment-container">
-            <div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">
-                    <span>HIGH VOLATILITY / PANIC</span>
-                    <span>LOW VOLATILITY / EUPHORIA</span>
-                </div>
-                <div class="sentiment-bar">
-                    <div id="vix-pointer" style="left: 50%;"></div>
-                </div>
-            </div>
-            <div style="text-align: right; border-left: 1px solid var(--border-color); padding-left: 20px;">
-                <div style="font-size: 10px; color: var(--text-muted);">VIX INDEX</div>
-                <div id="vix-value" style="font-size: 28px; font-weight: bold; color: var(--accent);">--.--</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="dashboard-sections">
-        <div class="panel">
-            <div class="panel-header">Global Macro Assets (US/Commodity/Crypto)</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Asset</th>
-                        <th>Price</th>
-                        <th>1D Change</th>
-                        <th>52W Trend</th>
-                    </tr>
-                </thead>
-                <tbody id="global-assets">
-                    <tr><td class="asset-name">S&P 500</td><td id="spx-price">--</td><td id="spx-pct">--</td><td><span style="color:var(--text-muted)">Bullish</span></td></tr>
-                    <tr><td class="asset-name">Bitcoin (BTC)</td><td id="btc-price">--</td><td id="btc-pct">--</td><td><span style="color:var(--text-muted)">High Momentum</span></td></tr>
-                    <tr><td class="asset-name">Gold (Spot)</td><td id="gold-price">--</td><td id="gold-pct">--</td><td><span style="color:var(--text-muted)">Hedge</span></td></tr>
-                    <tr><td class="asset-name">U.S. 10Y Yield</td><td id="tnx-price">--</td><td id="tnx-pct">--</td><td><span style="color:var(--text-muted)">Macro Key</span></td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="panel">
-            <div class="panel-header">China Market Performance (A-Shares/Offshore)</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Benchmark</th>
-                        <th>Level</th>
-                        <th>1D Change</th>
-                        <th>Risk Premium (ERP)</th>
-                    </tr>
-                </thead>
-                <tbody id="china-assets">
-                    <tr><td class="asset-name">CSI 300 (Domestic)</td><td id="csi-price">--</td><td id="csi-pct">--</td><td style="color:var(--warning)">Deep Value</td></tr>
-                    <tr><td class="asset-name">Hang Seng (Offshore)</td><td id="hsi-price">--</td><td id="hsi-pct">--</td><td style="color:var(--warning)">High Volatility</td></tr>
-                    <tr><td class="asset-name">USD/CNH</td><td id="cnh-price">--</td><td id="cnh-pct">--</td><td style="color:var(--text-muted)">FX Overlay</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script>
-    // --- USER CONFIG ---
-    const API_KEY = 'YOUR_TWELVE_DATA_KEY'; // REQUIRED: Get at twelvedata.com
-
-    // --- DATA FETCHING ---
-    async function refreshData() {
-        const symbols = "VIX,SPX,BTC/USD,GOLD,10Y,000300,HSI,USD/CNH";
-        const url = `https://api.twelvedata.com/quote?symbol=${symbols}&apikey=${API_KEY}`;
-        
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            // Map IDs to symbols
-            updateAsset('spx', data['SPX']);
-            updateAsset('btc', data['BTC/USD']);
-            updateAsset('gold', data['GOLD']);
-            updateAsset('tnx', data['10Y']);
-            updateAsset('csi', data['000300']);
-            updateAsset('hsi', data['HSI']);
-            updateAsset('cnh', data['USD/CNH']);
-            
-            // Handle VIX specifically
-            if(data['VIX']) updateVix(data['VIX']);
-            
-        } catch (e) {
-            console.error("Connection lost to data stream", e);
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+        "symbols": [
+            {"proName": "FOREXCOM:SPX500", "title": "S&P 500"},
+            {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+            {"proName": "TVC:GOLD", "title": "Gold"},
+            {"proName": "TVC:US10Y", "title": "US 10Y Yield"}
+        ],
+        "showSymbolLogo": true,
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "displayMode": "adaptive",
+        "locale": "en"
         }
-    }
+        </script>
+    </div>
 
-    function updateAsset(id, asset) {
-        if (!asset || asset.code) return; // Skip if error or missing
+    <div class="dashboard-container">
         
-        const priceEl = document.getElementById(`${id}-price`);
-        const pctEl = document.getElementById(`${id}-pct`);
-        
-        const price = parseFloat(asset.close);
-        const pct = parseFloat(asset.percent_change);
+        <div>
+            <span class="section-label">Global Macro & US Indices</span>
+            <div class="widget-wrapper">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                    "width": "100%", "height": "100%",
+                    "symbolsGroups": [
+                        {
+                        "name": "Indices",
+                        "originalName": "Indices",
+                        "symbols": [
+                            {"name": "FOREXCOM:SPX500", "displayName": "S&P 500"},
+                            {"name": "FOREXCOM:NSXUSD", "displayName": "Nasdaq 100"},
+                            {"name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin"},
+                            {"name": "TVC:GOLD", "displayName": "Gold"}
+                        ]
+                        }
+                    ],
+                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
 
-        priceEl.innerText = price.toLocaleString(undefined, {minimumFractionDigits: 2});
-        pctEl.innerText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-        pctEl.className = pct >= 0 ? 'pos' : 'neg';
-    }
+        <div>
+            <span class="section-label">Greater China Equities</span>
+            <div class="widget-wrapper">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                    "width": "100%", "height": "100%",
+                    "symbolsGroups": [
+                        {
+                        "name": "China Markets",
+                        "symbols": [
+                            {"name": "SHSE:000300", "displayName": "CSI 300 Index"},
+                            {"name": "HSI:HSI", "displayName": "Hang Seng Index"},
+                            {"name": "SHSE:000001", "displayName": "SSE Composite"},
+                            {"name": "NASDAQ:HXC", "displayName": "Golden Dragon China"}
+                        ]
+                        }
+                    ],
+                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
 
-    function updateVix(vix) {
-        const val = parseFloat(vix.close);
-        document.getElementById('vix-value').innerText = val.toFixed(2);
-        
-        const pointer = document.getElementById('vix-pointer');
-        const text = document.getElementById('sentiment-text');
-        
-        // VIX scaling: 10 (Greed) to 40 (Fear)
-        let pos = 100 - ((val - 10) * (100 / 30));
-        pos = Math.max(0, Math.min(100, pos));
-        pointer.style.left = `${pos}%`;
-
-        if (val > 28) { text.innerText = "PANIC / FEAR"; text.style.color = var(--down-color); }
-        else if (val < 16) { text.innerText = "EUPHORIA / RISK-ON"; text.style.color = var(--up-color); }
-        else { text.innerText = "NEUTRAL"; text.style.color = "#38bdf8"; }
-    }
-
-    // --- INITIALIZE ---
-    function setTime() {
-        const now = new Date();
-        document.getElementById('current-time').innerText = now.toUTCString().replace('GMT', 'UTC');
-    }
-    
-    setTime();
-    refreshData();
-    setInterval(refreshData, 60000); // Pulse every 60s
-    setInterval(setTime, 1000);
-</script>
-
+    </div>
 </body>
 </html>
