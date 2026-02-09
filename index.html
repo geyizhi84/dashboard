@@ -111,7 +111,7 @@
             </div>
 
             <div class="chart-card">
-                <div class="chart-label">Volatility: CBOE VIX Index</div>
+                <div class="chart-label">S&P 500</div>
                 <div id="chart_vix" class="widget-container"></div>
             </div>
 
@@ -148,7 +148,7 @@
         };
 
         new TradingView.widget({ ...commonSettings, "symbol": "FX_IDC:USDCNH", "container_id": "chart_usd_cnh" });
-        new TradingView.widget({ ...commonSettings, "symbol": "TVC:VIX", "container_id": "chart_vix" });
+        new TradingView.widget({ ...commonSettings, "symbol": "TVC:SPX", "container_id": "chart_SP500" });
         new TradingView.widget({ ...commonSettings, "symbol": "FRED:BAMLH0A0HYM2", "container_id": "chart_hy_spread" });
         new TradingView.widget({ ...commonSettings, "symbol": "TVC:BTCXAU", "container_id": "chart_btc_gold" });
         // Custom Ratio: S&P 500 divided by Gold Spot
