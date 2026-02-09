@@ -65,6 +65,33 @@
         }
     </style>
 </head>
+    <script>
+    // 1. Monitor the widget loading
+    window.addEventListener('load', function() {
+        // We wait 5 seconds for the TradingView iframe to appear
+        setTimeout(function() {
+            const widgets = document.querySelectorAll('.tradingview-widget-container iframe');
+            
+            // If no iframes are found, the widget was likely blocked
+            if (widgets.length === 0) {
+                console.warn("Sovereign Terminal: TradingView widgets were blocked or failed to load.");
+                
+                // Find all widget wrappers and show an error message
+                const wrappers = document.querySelectorAll('.widget-wrapper');
+                wrappers.forEach(wrapper => {
+                    wrapper.innerHTML = `
+                        <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#787b86; text-align:center; padding:20px;">
+                            <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
+                            <div style="font-size:12px; font-weight:bold; color:#ef4444;">DATA CONNECTION BLOCKED</div>
+                            <p style="font-size:10px; line-height:1.4;">Please disable Ad-Blockers or Brave Shields for this domain to view live market data.</p>
+                        </div>
+                    `;
+                    wrapper.style.border = "1px solid #ef4444"; // Red border for visibility
+                });
+            }
+        }, 5000); // 5-second timeout
+    });
+</script>
 <body>
 
     <div class="header">
