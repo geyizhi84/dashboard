@@ -3,47 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Global Terminal</title>
+    <title>Sovereign Market Terminal</title>
     <style>
-        :root { --bg: #0a0e14; --panel: #141a21; --accent: #38bdf8; --border: #2a323d; --text: #e2e8f0; --muted: #94a3b8; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
-        
-        /* Layout */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 15px; }
-        .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-        .header { background: #1c252e; padding: 8px 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
-        
-        /* Stats Table */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        td, th { padding: 12px; border-bottom: 1px solid #1c252e; text-align: left; }
-        .pos { color: #22c55e; } .neg { color: #ef4444; }
-        .asset { font-weight: bold; color: var(--accent); }
+        :root {
+            --bg-color: #06090f;
+            --panel-bg: #131722;
+            --accent: #2962ff;
+            --border: #2a2e39;
+        }
 
-        /* News & Charts */
-        .news-item { padding: 10px 12px; border-bottom: 1px solid #1c252e; font-size: 12px; display: block; text-decoration: none; color: var(--text); }
-        .news-item:hover { background: #1c252e; }
-        .chart img { width: 100%; filter: brightness(0.8) contrast(1.2); display: block; }
+        body {
+            background-color: var(--bg-color);
+            color: #d1d4dc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            padding: 15px 25px;
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.2rem; }
+
+        .dashboard-container {
+            padding: 0 20px 20px 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #787b86;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        .widget-wrapper {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            height: 450px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px;">
-        <div style="font-weight: 800; letter-spacing: 2px; color: var(--accent);">SOVEREIGN // TERMINAL</div>
-        <div style="font-size: 12px; color: var(--muted);">SYSTEMS ONLINE | FEB 08 2026</div>
+    <div class="header">
+        <div class="terminal-logo">SOVEREIGN // CAPITAL HUB</div>
+        <div style="font-size: 12px; color: #787b86;">MARKET DATA: LIVE ACCESS</div>
     </div>
 
-    <div class="grid">
-        <div class="panel">
-            <div class="header">Global Macro Assets</div>
-            <table>
-                <tr><th class="asset">S&P 500</th><td class="pos">5,942</td><td class="pos">+0.42%</td></tr>
-                <tr><th class="asset">Bitcoin</th><td class="neg">98,240</td><td class="neg">-3.15%</td></tr>
-                <tr><th class="asset">Gold</th><td class="pos">2,340</td><td class="pos">+1.10%</td></tr>
-            </table>
-            <div class="chart"><img src="https://charts2.finviz.com/chart.ashx?t=SPY&ty=c&ta=1&p=d&s=l"></div>
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+        "symbols": [
+            {"proName": "FOREXCOM:SPX500", "title": "S&P 500"},
+            {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+            {"proName": "TVC:GOLD", "title": "Gold"},
+            {"proName": "TVC:US10Y", "title": "US 10Y Yield"}
+        ],
+        "showSymbolLogo": true,
+        "colorTheme": "dark",
+        "isTransparent": false,
+        "displayMode": "adaptive",
+        "locale": "en"
+        }
+        </script>
+    </div>
+
+    <div class="dashboard-container">
+        
+        <div>
+            <span class="section-label">Global Macro & US Indices</span>
+            <div class="widget-wrapper">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                    "width": "100%", "height": "100%",
+                    "symbolsGroups": [
+                        {
+                        "name": "Indices",
+                        "originalName": "Indices",
+                        "symbols": [
+                            {"name": "FOREXCOM:SPX500", "displayName": "S&P 500"},
+                            {"name": "FOREXCOM:NSXUSD", "displayName": "Nasdaq 100"},
+                            {"name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin"},
+                            {"name": "TVC:GOLD", "displayName": "Gold"}
+                        ]
+                        }
+                    ],
+                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
         </div>
 
-        <div class="panel">
-            <div class="header">Greater China Monitor</div>
-            <table>
-                <tr><th class="asset">CSI 300</th><td>3,842</td><td class="pos">+0.85%</td></tr>
+        <div>
+            <span class="section-label">Greater China Equities</span>
+            <div class="widget-wrapper">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                    "width": "100%", "height": "100%",
+                    "symbolsGroups": [
+                        {
+                        "name": "China Markets",
+                        "symbols": [
+                            {"name": "SHSE:000300", "displayName": "CSI 300 Index"},
+                            {"name": "HSI:HSI", "displayName": "Hang Seng Index"},
+                            {"name": "SHSE:000001", "displayName": "SSE Composite"},
+                            {"name": "NASDAQ:HXC", "displayName": "Golden Dragon China"}
+                        ]
+                        }
+                    ],
+                    "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
