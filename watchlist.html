@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Market Watchlist</title>
+    <style>
+        :root {
+            --bg-color: #06090f;
+            --panel-bg: #131722;
+            --accent: #2962ff;
+            --border: #2a2e39;
+            --text-main: #d1d4dc;
+            --text-muted: #787b86;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 2px solid var(--accent);
+        }
+
+        .logo { font-weight: 800; letter-spacing: 2px; color: var(--accent); font-size: 1.2rem; }
+        .date { font-family: monospace; font-size: 12px; color: var(--text-muted); }
+
+        /* Compact Bento Grid Layout */
+        .watchlist-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1px; /* Mimics the zero-space design */
+            background-color: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .section-panel { background: var(--panel-bg); }
+
+        /* TradingView Widget Containers */
+        .widget-container { height: 600px; width: 100%; }
+        
+        /* Custom "Loading" and "Error" Fallback */
+        .fallback-msg {
+            display: none; height: 100%; flex-direction: column; 
+            justify-content: center; align-items: center; padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">SOVEREIGN // WATCHLIST</div>
+        <div class="date" id="current-date">FEB 11 2026</div>
+    </div>
+
+    <div class="watchlist-grid">
+        <div class="section-panel">
+            <div class="widget-container">
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                        "width": "100%", "height": "100%",
+                        "symbolsGroups": [
+                            {
+                                "name": "1. EQUITIES - Global & U.S.",
+                                "symbols": [
+                                    {"name": "AMEX:ACWI", "displayName": "iShares MSCI ACWI"},
+                                    {"name": "VANGUARD:VT", "displayName": "Vanguard Total World"},
+                                    {"name": "VANGUARD:VTI", "displayName": "Vanguard Total Stock"},
+                                    {"name": "ARCA:SPY", "displayName": "SPDR S&P 500 ETF"},
+                                    {"name": "NASDAQ:QQQ", "displayName": "Invesco QQQ Trust"}
+                                ]
+                            },
+                            {
+                                "name": "Developed Markets",
+                                "symbols": [
+                                    {"name": "AMEX:EFA", "displayName": "iShares MSCI EAFE"},
+                                    {"name": "AMEX:EZU", "displayName": "iShares MSCI Eurozone"},
+                                    {"name": "AMEX:EWU", "displayName": "iShares MSCI UK"},
+                                    {"name": "AMEX:EWJ", "displayName": "iShares MSCI Japan"}
+                                ]
+                            }
+                        ],
+                        "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-panel">
+            <div class="widget-container">
+                <div class="tradingview-widget-container">
+                    <div class="tradingview-widget-container__widget"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+                    {
+                        "width": "100%", "height": "100%",
+                        "symbolsGroups": [
+                            {
+                                "name": "Emerging Markets",
+                                "symbols": [
+                                    {"name": "AMEX:EEM", "displayName": "iShares MSCI Emerging"},
+                                    {"name": "AMEX:EWY", "displayName": "iShares South Korea"},
+                                    {"name": "AMEX:EWZ", "displayName": "iShares MSCI Brazil"},
+                                    {"name": "AMEX:EWT", "displayName": "iShares MSCI Taiwan"}
+                                ]
+                            },
+                            {
+                                "name": "China Market",
+                                "symbols": [
+                                    {"name": "AMEX:MCHI", "displayName": "iShares MSCI China"},
+                                    {"name": "AMEX:FXI", "displayName": "China Large-Cap ETF"},
+                                    {"name": "NASDAQ:KWEB", "displayName": "CSI China Internet"},
+                                    {"name": "AMEX:ASHR", "displayName": "CSI 300 China A"}
+                                ]
+                            }
+                        ],
+                        "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "locale": "en"
+                    }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Automatic Fallback Detection
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const iframes = document.querySelectorAll('iframe');
+                if (iframes.length === 0) {
+                    alert("Ad-blocker detected. Please disable it to view the live watchlist.");
+                }
+            }, 5000);
+        });
+        document.getElementById('current-date').innerText = new Date().toDateString().toUpperCase();
+    </script>
+</body>
+</html>
