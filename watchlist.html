@@ -2,118 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Market Watchlist | Live Replica</title>
+    <title>Sovereign Market Terminal | Google Powered</title>
     <style>
-        :root {
-            --bg: #ffffff;
-            --header-bg: #e2e2e2;
-            --sub-header: #fdb927; /* Replicated Yellow */
-            --text-dark: #000000;
-            --border: #d1d1d1;
-            --pos-bg: #c6efce;
-            --pos-text: #006100;
-            --neg-bg: #ffc7ce;
-            --neg-text: #9c0006;
-        }
-
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: var(--text-dark); }
-        .container { background: white; max-width: 1200px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        .main-title { font-size: 24px; font-weight: 900; padding: 10px 15px; border-bottom: 2px solid black; }
-        .sub-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 11px; font-weight: bold; background: white; border-bottom: 1px solid var(--border); }
-
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead th { background: var(--header-bg); border: 1px solid var(--border); padding: 5px; font-size: 11px; text-align: center; }
-        .ytd-header { background: #000; color: #fff; width: 100px; }
-
-        .group-header { background: var(--sub-header); font-weight: bold; font-size: 13px; padding: 4px 15px; border-top: 1px solid black; border-bottom: 1px solid black; }
-        .sub-group { background: #f9f9f9; font-weight: bold; font-size: 11px; padding: 3px 10px; }
-
-        tr { border-bottom: 1px solid var(--border); }
-        td { padding: 4px 10px; font-size: 12px; height: 25px; border-right: 1px solid var(--border); text-align: center; }
-        .ticker { font-weight: bold; width: 60px; text-align: left; }
-        .name { width: 280px; font-size: 11px; text-align: left; }
-        .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
-        
-        .pct { text-align: right; font-weight: 600; }
-        .pos { background-color: var(--pos-bg) !important; color: var(--pos-text) !important; }
-        .neg { background-color: var(--neg-bg) !important; color: var(--neg-text) !important; }
+        :root { --bg: #ffffff; --sub-header: #fdb927; --pos-bg: #c6efce; --neg-bg: #ffc7ce; --border: #d1d1d1; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { background: white; max-width: 1200px; margin: 0 auto; border: 1px solid #000; }
+        .main-title { font-size: 24px; font-weight: 900; padding: 10px; border-bottom: 2px solid #000; }
+        .group-header { background: var(--sub-header); font-weight: bold; padding: 5px 15px; border-bottom: 1px solid #000; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #e2e2e2; border: 1px solid var(--border); padding: 5px; }
+        td { border: 1px solid var(--border); padding: 5px 10px; text-align: center; }
+        .ticker { font-weight: bold; text-align: left; }
+        .pos { background-color: var(--pos-bg); color: #006100; }
+        .neg { background-color: var(--neg-bg); color: #9c0006; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-title">Market Watchlist</div>
-    <div class="sub-bar">
-        <span>2026-02-11</span>
-        <span style="color:blue">SOVEREIGN CAPITAL HUB</span>
-        <span style="color:red">LIVE DATA // YAHOO FINANCE PROXY</span>
+    <div id="watchlist-container">
+        <div style="padding: 20px; text-align: center;">Initializing Google Finance Stream...</div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th style="width:60px">Ticker</th>
-                <th style="width:280px">Name</th>
-                <th style="width:80px">Price</th>
-                <th style="width:70px">1D%</th>
-                <th style="width:70px">5D%</th>
-                <th style="width:70px">REL5</th>
-                <th style="width:70px">REL20</th>
-                <th style="width:80px">Trend</th>
-                <th class="ytd-header">YTD %</th>
-            </tr>
-        </thead>
-        <tbody id="watchlist-body">
-            <tr><td colspan="9" class="group-header">1. EQUITIES</td></tr>
-            <tr><td colspan="9" class="sub-group">Global Markets</td></tr>
-            <tr>
-                <td class="ticker">ACWI</td><td class="name">iShares MSCI ACWI ETF</td>
-                <td class="price">147.71</td><td class="pct pos">+0.27%</td><td class="pct pos">+1.60%</td>
-                <td>+0.20</td><td>+0.27</td><td>📈</td><td class="pct pos">+4.80%</td>
-            </tr>
-            <tr>
-                <td class="ticker">VT</td><td class="name">Vanguard Total World Stock ETF</td>
-                <td class="price">148.04</td><td class="pct pos">+0.43%</td><td class="pct pos">+2.01%</td>
-                <td>+0.36</td><td>+0.36</td><td>📈</td><td class="pct pos">+4.95%</td>
-            </tr>
-            <tr>
-                <td class="ticker">ACWX</td><td class="name">iShares MSCI ACWI ex US ETF</td>
-                <td class="price">62.15</td><td class="pct pos">+0.11%</td><td class="pct pos">+0.85%</td>
-                <td>+0.04</td><td>+0.11</td><td>📈</td><td class="pct pos">+2.10%</td>
-            </tr>
-
-            <tr><td colspan="9" class="sub-group">U.S. Market</td></tr>
-            <tr>
-                <td class="ticker">VTI</td><td class="name">Vanguard Total Stock Market ETF</td>
-                <td class="price">341.78</td><td class="pct neg">-0.06%</td><td class="pct pos">+1.04%</td>
-                <td>0.00</td><td>-0.20</td><td>📉</td><td class="pct pos">+1.94%</td>
-            </tr>
-            <tr>
-                <td class="ticker">SPY</td><td class="name">SPDR S&P 500 ETF Trust</td>
-                <td class="price">692.62</td><td class="pct pos">+0.07%</td><td class="pct pos">+1.02%</td>
-                <td>0.00</td><td>0.00</td><td>📈</td><td class="pct pos">+1.65%</td>
-            </tr>
-            <tr>
-                <td class="ticker">QQQ</td><td class="name">Invesco QQQ Trust</td>
-                <td class="price">613.11</td><td class="pct pos">+0.30%</td><td class="pct pos">+1.85%</td>
-                <td>+0.23</td><td>+0.30</td><td>📈</td><td class="pct pos">+3.20%</td>
-            </tr>
-
-            <tr><td colspan="9" class="group-header">China Market</td></tr>
-            <tr>
-                <td class="ticker">MCHI</td><td class="name">iShares MSCI China ETF</td>
-                <td class="price">61.93</td><td class="pct neg">-0.10%</td><td class="pct pos">+2.61%</td>
-                <td>+1.54</td><td>-3.00</td><td>📉</td><td class="pct pos">+3.10%</td>
-            </tr>
-            <tr>
-                <td class="ticker">ASHR</td><td class="name">Xtrackers Harvest CSI 300 China A</td>
-                <td class="price">34.01</td><td class="pct neg">-0.06%</td><td class="pct pos">+1.45%</td>
-                <td>+0.38</td><td>+0.57</td><td>📈</td><td class="pct pos">+3.50%</td>
-            </tr>
-        </tbody>
-    </table>
 </div>
 
+<script>
+    const CSV_URL = 'PASTE_YOUR_GOOGLE_SHEET_CSV_URL_HERE';
+
+    async function updateDashboard() {
+        try {
+            const response = await fetch(CSV_URL);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1); // Remove header row
+
+            let html = `<table><thead><tr><th>Ticker</th><th>Price</th><th>1D%</th><th>5D%</th><th>YTD%</th></tr></thead><tbody>`;
+            
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if (cols.length < 2) return;
+                
+                const ticker = cols[0];
+                const price = parseFloat(cols[1]).toFixed(2);
+                const d1 = (parseFloat(cols[2]) * 100).toFixed(2);
+                
+                html += `
+                    <tr>
+                        <td class="ticker">${ticker}</td>
+                        <td style="text-align:right">${price}</td>
+                        <td class="${d1 >= 0 ? 'pos' : 'neg'}">${d1}%</td>
+                        </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            document.getElementById('watchlist-container').innerHTML = html;
+        } catch (e) {
+            console.error("Connection failed", e);
+        }
+    }
+
+    // Refresh every 60 seconds
+    setInterval(updateDashboard, 60000);
+    updateDashboard();
+</script>
 </body>
 </html>
