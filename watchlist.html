@@ -2,68 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Market Terminal | Google Powered</title>
+    <title>Sovereign Market Terminal | Live Feed</title>
     <style>
         :root { --bg: #ffffff; --sub-header: #fdb927; --pos-bg: #c6efce; --neg-bg: #ffc7ce; --border: #d1d1d1; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { background: white; max-width: 1200px; margin: 0 auto; border: 1px solid #000; }
-        .main-title { font-size: 24px; font-weight: 900; padding: 10px; border-bottom: 2px solid #000; }
-        .group-header { background: var(--sub-header); font-weight: bold; padding: 5px 15px; border-bottom: 1px solid #000; font-size: 13px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background: #e2e2e2; border: 1px solid var(--border); padding: 5px; }
-        td { border: 1px solid var(--border); padding: 5px 10px; text-align: center; }
-        .ticker { font-weight: bold; text-align: left; }
-        .pos { background-color: var(--pos-bg); color: #006100; }
-        .neg { background-color: var(--neg-bg); color: #9c0006; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
+        .container { background: white; max-width: 1000px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .main-title { font-size: 24px; font-weight: 900; padding: 12px; border-bottom: 2px solid #000; display: flex; justify-content: space-between; }
+        .group-header { background: var(--sub-header); font-weight: bold; padding: 6px 15px; border-top: 1px solid #000; border-bottom: 1px solid #000; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #e2e2e2; border: 1px solid var(--border); padding: 6px; font-size: 11px; }
+        td { border: 1px solid var(--border); padding: 8px 12px; text-align: center; }
+        .ticker { font-weight: bold; text-align: left; width: 80px; }
+        .pos { background-color: var(--pos-bg); color: #006100; font-weight: bold; }
+        .neg { background-color: var(--neg-bg); color: #9c0006; font-weight: bold; }
+        .price { font-family: 'Courier New', monospace; font-weight: bold; text-align: right; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-title">Market Watchlist</div>
-    <div id="watchlist-container">
-        <div style="padding: 20px; text-align: center;">Initializing Google Finance Stream...</div>
+    <div class="main-title">
+        <span>Market Watchlist</span>
+        <span id="update-time" style="font-size: 12px; font-weight: normal; color: #666;">Syncing...</span>
+    </div>
+    
+    <div id="dashboard-content">
+        <div style="padding: 40px; text-align: center; color: #666;">Establishing Google Finance Data Stream...</div>
     </div>
 </div>
 
 <script>
-    const CSV_URL = 'PASTE_YOUR_GOOGLE_SHEET_CSV_URL_HERE';
+    // 1. Replace with your Sheet ID
+    const SHEET_ID = 'YOUR_SHEET_ID_HERE'; 
+    // 2. This direct CSV export bypasses the "Publish to Web" glitch
+    const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-    async function updateDashboard() {
+    async function refreshDashboard() {
         try {
-            const response = await fetch(CSV_URL);
-            const data = await response.text();
-            const rows = data.split('\n').slice(1); // Remove header row
-
-            let html = `<table><thead><tr><th>Ticker</th><th>Price</th><th>1D%</th><th>5D%</th><th>YTD%</th></tr></thead><tbody>`;
+            const response = await fetch(DATA_URL);
+            const csvText = await response.text();
             
-            rows.forEach(row => {
-                const cols = row.split(',');
-                if (cols.length < 2) return;
+            // Basic CSV parser
+            const rows = csvText.split('\n').map(row => 
+                row.split(',').map(cell => cell.replace(/"/g, ''))
+            ).slice(1); // Skip header
+
+            let html = `<table><thead><tr><th>Ticker</th><th>Price</th><th>1D%</th><th>YTD%</th></tr></thead><tbody>`;
+            
+            // Add Section Header
+            html += `<tr><td colspan="4" class="group-header">1. EQUITIES & GLOBAL MACRO</td></tr>`;
+
+            rows.forEach(cols => {
+                if (cols.length < 2 || !cols[0]) return;
                 
-                const ticker = cols[0];
+                const ticker = cols[0].split(':')[1] || cols[0]; // Clean "NASDAQ:SPY" to "SPY"
                 const price = parseFloat(cols[1]).toFixed(2);
                 const d1 = (parseFloat(cols[2]) * 100).toFixed(2);
+                const ytd = (parseFloat(cols[3]) * 100).toFixed(2);
                 
                 html += `
                     <tr>
                         <td class="ticker">${ticker}</td>
-                        <td style="text-align:right">${price}</td>
+                        <td class="price">${price}</td>
                         <td class="${d1 >= 0 ? 'pos' : 'neg'}">${d1}%</td>
-                        </tr>
+                        <td class="${ytd >= 0 ? 'pos' : 'neg'}">${ytd}%</td>
+                    </tr>
                 `;
             });
 
             html += `</tbody></table>`;
-            document.getElementById('watchlist-container').innerHTML = html;
-        } catch (e) {
-            console.error("Connection failed", e);
+            document.getElementById('dashboard-content').innerHTML = html;
+            document.getElementById('update-time').innerText = 'Last Sync: ' + new Date().toLocaleTimeString();
+            
+        } catch (error) {
+            document.getElementById('dashboard-content').innerHTML = 
+                `<div style="padding:20px; color:red;">Connection Error. Check Sheet Sharing Permissions.</div>`;
         }
     }
 
-    // Refresh every 60 seconds
-    setInterval(updateDashboard, 60000);
-    updateDashboard();
+    // High-frequency refresh for "Real-Time" feel (every 30 seconds)
+    setInterval(refreshDashboard, 30000);
+    refreshDashboard();
 </script>
 </body>
 </html>
