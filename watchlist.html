@@ -2,93 +2,144 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Alpha Terminal</title>
+    <title>Sovereign Market Watchlist | Alpha Vantage Live</title>
     <style>
-        :root { --bg: #06090f; --panel: #131722; --accent: #2962ff; --border: #2a2e39; --text: #d1d4dc; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; border: 1px solid var(--border); background: var(--panel); border-radius: 4px; }
-        .header { padding: 15px; border-bottom: 2px solid var(--accent); font-weight: 800; display: flex; justify-content: space-between; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { text-align: left; padding: 12px; color: #787b86; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #1c252e; font-family: 'Roboto Mono', monospace; }
-        .pos { color: #22c55e; } .neg { color: #ef4444; }
-        .ticker { color: var(--accent); font-weight: bold; font-family: 'Inter', sans-serif; }
+        :root {
+            --bg: #ffffff;
+            --header-bg: #e2e2e2;
+            --sub-header: #fdb927;
+            --text-dark: #000000;
+            --border: #d1d1d1;
+            --pos-bg: #c6efce;
+            --pos-text: #006100;
+            --neg-bg: #ffc7ce;
+            --neg-text: #9c0006;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: var(--text-dark); }
+        .container { background: white; max-width: 1200px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .main-title { font-size: 24px; font-weight: 900; padding: 10px 15px; border-bottom: 2px solid black; }
+        .sub-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 11px; font-weight: bold; background: white; border-bottom: 1px solid var(--border); }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        thead th { background: var(--header-bg); border: 1px solid var(--border); padding: 5px; font-size: 11px; text-align: center; }
+        .ytd-header { background: #000; color: #fff; width: 100px; }
+
+        .group-header { background: var(--sub-header); font-weight: bold; font-size: 13px; padding: 4px 15px; border-top: 1px solid black; border-bottom: 1px solid black; }
+        .sub-group { background: #f9f9f9; font-weight: bold; font-size: 11px; padding: 3px 10px; }
+
+        tr { border-bottom: 1px solid var(--border); }
+        td { padding: 4px 10px; font-size: 12px; height: 25px; border-right: 1px solid var(--border); text-align: center; }
+        .ticker { font-weight: bold; width: 60px; text-align: left; }
+        .name { width: 280px; font-size: 11px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
+        .pct { text-align: right; font-weight: 600; }
+        .pos { background-color: var(--pos-bg) !important; color: var(--pos-text) !important; }
+        .neg { background-color: var(--neg-bg) !important; color: var(--neg-text) !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <span>SOVEREIGN // LIVE FEED</span>
-        <span id="status" style="font-size: 10px; color: #787b86;">READY</span>
+    <div class="main-title">Market Watchlist</div>
+    <div class="sub-bar">
+        <span id="current-date">--</span>
+        <span style="color:blue">SOVEREIGN CAPITAL HUB</span>
+        <span id="api-status" style="color:red">INITIALIZING API...</span>
     </div>
-    <table id="market-table">
+
+    <table>
         <thead>
             <tr>
-                <th>Symbol</th>
-                <th>Price</th>
-                <th>Change %</th>
-                <th>Volume</th>
+                <th style="width:60px">Ticker</th>
+                <th style="width:280px">Name</th>
+                <th style="width:80px">Price</th>
+                <th style="width:70px">1D%</th>
+                <th style="width:70px">5D%</th>
+                <th style="width:70px">REL5</th>
+                <th style="width:70px">REL20</th>
+                <th style="width:80px">Trend</th>
+                <th class="ytd-header">YTD %</th>
             </tr>
         </thead>
-        <tbody id="table-body">
+        <tbody id="watchlist-body">
             </tbody>
     </table>
 </div>
 
 <script>
-    const API_KEY = 'F2T5EKCV5X2Y57HW';
-    const TICKERS = ['SPY', 'QQQ', 'BTCUSD', 'GOLD']; // Note: BTCUSD and GOLD depend on Alpha Vantage coverage
+    const API_KEY = 'F2T5EKCV5X2Y57HW'; // Replace with your Alpha Vantage Key
+    const tickers = [
+        { symbol: 'ACWI', name: 'iShares MSCI ACWI ETF', group: 'Global Markets' },
+        { symbol: 'VT', name: 'Vanguard Total World Stock ETF', group: 'Global Markets' },
+        { symbol: 'ACWX', name: 'iShares MSCI ACWI ex US ETF', group: 'Global Markets' },
+        { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', group: 'U.S. Market' },
+        { symbol: 'SPY', name: 'SPDR S&P 500 ETF Trust', group: 'U.S. Market' },
+        { symbol: 'QQQ', name: 'Invesco QQQ Trust', group: 'U.S. Market' },
+        { symbol: 'MCHI', name: 'iShares MSCI China ETF', group: 'China Market' },
+        { symbol: 'ASHR', name: 'Xtrackers Harvest CSI 300 China A', group: 'China Market' }
+    ];
 
-    async function fetchQuote(symbol) {
-        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
+    async function fetchData(symbol) {
         try {
-            const response = await fetch(url);
+            // Fetch Global Quote for Real-time Price and 1D %
+            const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
+            const response = await fetch(quoteUrl);
             const data = await response.json();
             return data["Global Quote"];
         } catch (e) {
-            console.error("Fetch error for " + symbol, e);
+            console.error(e);
             return null;
         }
     }
 
-    async function updateDashboard() {
-        const tbody = document.getElementById('table-body');
-        const status = document.getElementById('status');
-        status.innerText = "REFRESHING...";
-        
-        // Clear existing rows
-        tbody.innerHTML = '';
+    async function buildTable() {
+        const body = document.getElementById('watchlist-body');
+        document.getElementById('current-date').innerText = new Date().toISOString().split('T')[0];
+        let currentGroup = "";
 
-        for (const symbol of TICKERS) {
-            const quote = await fetchQuote(symbol);
-            if (!quote || !quote["05. price"]) continue;
+        for (const item of tickers) {
+            // Add Group Headers
+            if (currentGroup !== item.group) {
+                if (item.group === "China Market") {
+                    body.innerHTML += `<tr><td colspan="9" class="group-header">China Market</td></tr>`;
+                } else if (currentGroup === "") {
+                    body.innerHTML += `<tr><td colspan="9" class="group-header">1. EQUITIES</td></tr>`;
+                    body.innerHTML += `<tr><td colspan="9" class="sub-group">${item.group}</td></tr>`;
+                } else {
+                    body.innerHTML += `<tr><td colspan="9" class="sub-group">${item.group}</td></tr>`;
+                }
+                currentGroup = item.group;
+            }
 
-            const price = parseFloat(quote["05. price"]).toFixed(2);
-            const changePct = quote["10. change percent"];
-            const isPos = !changePct.includes('-');
+            const data = await fetchData(item.symbol);
+            if (data) {
+                const price = parseFloat(data["05. price"]).toFixed(2);
+                const changePctStr = data["10. change percent"];
+                const changePct = parseFloat(changePctStr);
+                const colorClass = changePct >= 0 ? 'pos' : 'neg';
+                const trendIcon = changePct >= 0 ? '📈' : '📉';
 
-            const row = `
-                <tr>
-                    <td class="ticker">${symbol}</td>
-                    <td>${price}</td>
-                    <td class="${isPos ? 'pos' : 'neg'}">${changePct}</td>
-                    <td style="color:#787b86">${parseInt(quote["06. volume"]).toLocaleString()}</td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-
-            // Free Tier throttle: Alpha Vantage free keys have a per-minute limit.
-            // We wait 1 second between requests to be safe.
-            await new Promise(r => setTimeout(r, 1000));
+                body.innerHTML += `
+                    <tr>
+                        <td class="ticker">${item.symbol}</td>
+                        <td class="name">${item.name}</td>
+                        <td class="price">${price}</td>
+                        <td class="pct ${colorClass}">${changePctStr}</td>
+                        <td class="pct">--</td> <td>--</td>
+                        <td>--</td>
+                        <td>${trendIcon}</td>
+                        <td class="pct">--</td> 
+                    </tr>
+                `;
+            }
+            // Throttle requests to respect Free Tier (5 calls per minute / 25 per day)
+            await new Promise(resolve => setTimeout(resolve, 12000)); 
         }
-        status.innerText = "UPDATED: " + new Date().toLocaleTimeString();
+        document.getElementById('api-status').innerText = "LIVE DATA // ALPHA VANTAGE";
     }
 
-    // Initial load
-    updateDashboard();
-    // Refresh every 5 minutes to stay within free tier limits (5 calls/min)
-    setInterval(updateDashboard, 300000);
+    buildTable();
 </script>
 </body>
 </html>
