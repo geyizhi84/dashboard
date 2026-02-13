@@ -2,38 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Market Watchlist | Alpha Vantage Live</title>
+    <title>Sovereign Market Watchlist | Multi-Period Performance</title>
     <style>
         :root {
-            --bg: #ffffff;
-            --header-bg: #e2e2e2;
+            --bg: #06090f;
+            --panel: #131722;
+            --accent: #2962ff;
+            --border: #2a2e39;
+            --text-dark: #d1d4dc;
+            --pos-bg: #132a13;
+            --pos-text: #22c55e;
+            --neg-bg: #2d1414;
+            --neg-text: #ef4444;
             --sub-header: #fdb927;
-            --text-dark: #000000;
-            --border: #d1d1d1;
-            --pos-bg: #c6efce;
-            --pos-text: #006100;
-            --neg-bg: #ffc7ce;
-            --neg-text: #9c0006;
         }
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: var(--text-dark); }
-        .container { background: white; max-width: 1200px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .main-title { font-size: 24px; font-weight: 900; padding: 10px 15px; border-bottom: 2px solid black; }
-        .sub-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 11px; font-weight: bold; background: white; border-bottom: 1px solid var(--border); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text-dark); margin: 0; padding: 10px; }
+        .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        
+        .main-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
+        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); font-size: 18px; }
+        .status-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 10px; font-weight: bold; background: #0c1017; color: #787b86; border-bottom: 1px solid var(--border); }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead th { background: var(--header-bg); border: 1px solid var(--border); padding: 5px; font-size: 11px; text-align: center; }
-        .ytd-header { background: #000; color: #fff; width: 100px; }
+        thead th { background: #1c202e; border: 1px solid var(--border); padding: 8px; font-size: 10px; text-transform: uppercase; color: #787b86; }
+        .ytd-header { background: #000; color: #fff; }
 
-        .group-header { background: var(--sub-header); font-weight: bold; font-size: 13px; padding: 4px 15px; border-top: 1px solid black; border-bottom: 1px solid black; }
-        .sub-group { background: #f9f9f9; font-weight: bold; font-size: 11px; padding: 3px 10px; }
+        .group-header { background: var(--sub-header); color: #000; font-weight: bold; font-size: 12px; padding: 4px 15px; border-top: 1px solid #000; }
+        .sub-group { background: #1c202e; font-weight: bold; font-size: 10px; padding: 3px 15px; color: var(--accent); }
 
         tr { border-bottom: 1px solid var(--border); }
-        td { padding: 4px 10px; font-size: 12px; height: 25px; border-right: 1px solid var(--border); text-align: center; }
-        .ticker { font-weight: bold; width: 60px; text-align: left; }
-        .name { width: 280px; font-size: 11px; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        td { padding: 6px 10px; font-size: 12px; border-right: 1px solid var(--border); text-align: center; }
+        .ticker { font-weight: bold; text-align: left; color: var(--accent); }
         .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
-        .pct { text-align: right; font-weight: 600; }
+        
+        .pct { text-align: right; font-weight: 600; font-family: 'Roboto Mono', monospace; }
         .pos { background-color: var(--pos-bg) !important; color: var(--pos-text) !important; }
         .neg { background-color: var(--neg-bg) !important; color: var(--neg-text) !important; }
     </style>
@@ -41,25 +44,25 @@
 <body>
 
 <div class="container">
-    <div class="main-title">Market Watchlist</div>
-    <div class="sub-bar">
+    <div class="main-header">
+        <div class="logo">SOVEREIGN // CAPITAL</div>
+        <div id="clock" style="font-family: monospace; font-size: 12px;">--:--:-- UTC</div>
+    </div>
+    <div class="status-bar">
         <span id="current-date">--</span>
-        <span style="color:blue">SOVEREIGN CAPITAL HUB</span>
-        <span id="api-status" style="color:red">INITIALIZING API...</span>
+        <span id="api-log">IDLE: WAITING FOR COMMAND</span>
+        <span style="color:var(--accent)">ALPHA VANTAGE DATA STREAM</span>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width:60px">Ticker</th>
-                <th style="width:280px">Name</th>
-                <th style="width:80px">Price</th>
-                <th style="width:70px">1D%</th>
-                <th style="width:70px">5D%</th>
-                <th style="width:70px">REL5</th>
-                <th style="width:70px">REL20</th>
-                <th style="width:80px">Trend</th>
-                <th class="ytd-header">YTD %</th>
+                <th style="width:70px">Ticker</th>
+                <th>Price</th>
+                <th>1D%</th>
+                <th>5D%</th>
+                <th>Trend</th>
+                <th class="ytd-header" style="width:100px">YTD Performance</th>
             </tr>
         </thead>
         <tbody id="watchlist-body">
@@ -68,78 +71,88 @@
 </div>
 
 <script>
-    const API_KEY = 'F2T5EKCV5X2Y57HW'; // Replace with your Alpha Vantage Key
-    const tickers = [
-        { symbol: 'ACWI', name: 'iShares MSCI ACWI ETF', group: 'Global Markets' },
-        { symbol: 'VT', name: 'Vanguard Total World Stock ETF', group: 'Global Markets' },
-        { symbol: 'ACWX', name: 'iShares MSCI ACWI ex US ETF', group: 'Global Markets' },
-        { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', group: 'U.S. Market' },
-        { symbol: 'SPY', name: 'SPDR S&P 500 ETF Trust', group: 'U.S. Market' },
-        { symbol: 'QQQ', name: 'Invesco QQQ Trust', group: 'U.S. Market' },
-        { symbol: 'MCHI', name: 'iShares MSCI China ETF', group: 'China Market' },
-        { symbol: 'ASHR', name: 'Xtrackers Harvest CSI 300 China A', group: 'China Market' }
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const groups = [
+        { label: "1. EQUITIES", isHeader: true },
+        { label: "Global Markets", tickers: ["ACWI", "VT", "ACWX"] },
+        { label: "U.S. Market", tickers: ["VTI", "SPY", "QQQ"] },
+        { label: "Developed Markets", tickers: ["EFA", "IEFA", "VEA", "VSS"] },
+        { label: "Emerging Markets", tickers: ["EEM", "VWO", "IEMG"] },
+        { label: "China Market", isHeader: true },
+        { label: "China Focus", tickers: ["MCHI", "ASHR"] }
     ];
 
-    async function fetchData(symbol) {
+    async function fetchPerformance(symbol) {
+        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${API_KEY}`;
         try {
-            // Fetch Global Quote for Real-time Price and 1D %
-            const quoteUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
-            const response = await fetch(quoteUrl);
+            const response = await fetch(url);
             const data = await response.json();
-            return data["Global Quote"];
-        } catch (e) {
-            console.error(e);
-            return null;
-        }
+            const timeSeries = data["Time Series (Daily)"];
+            if (!timeSeries) return null;
+
+            const dates = Object.keys(timeSeries);
+            const currentClose = parseFloat(timeSeries[dates[0]]["4. close"]);
+            const prevClose = parseFloat(timeSeries[dates[1]]["4. close"]);
+            const fiveDayClose = parseFloat(timeSeries[dates[5]]["4. close"]);
+
+            // YTD Logic: Find last entry of previous year
+            const yearStartKey = dates.find(d => d.startsWith('2025-12-31')) || dates[dates.length - 1];
+            const yearStartClose = parseFloat(timeSeries[yearStartKey]["4. close"]);
+
+            return {
+                price: currentClose,
+                d1: ((currentClose - prevClose) / prevClose * 100).toFixed(2),
+                d5: ((currentClose - fiveDayClose) / fiveDayClose * 100).toFixed(2),
+                ytd: ((currentClose - yearStartClose) / yearStartClose * 100).toFixed(2)
+            };
+        } catch (e) { return null; }
     }
 
-    async function buildTable() {
+    async function init() {
         const body = document.getElementById('watchlist-body');
+        const log = document.getElementById('api-log');
         document.getElementById('current-date').innerText = new Date().toISOString().split('T')[0];
-        let currentGroup = "";
 
-        for (const item of tickers) {
-            // Add Group Headers
-            if (currentGroup !== item.group) {
-                if (item.group === "China Market") {
-                    body.innerHTML += `<tr><td colspan="9" class="group-header">China Market</td></tr>`;
-                } else if (currentGroup === "") {
-                    body.innerHTML += `<tr><td colspan="9" class="group-header">1. EQUITIES</td></tr>`;
-                    body.innerHTML += `<tr><td colspan="9" class="sub-group">${item.group}</td></tr>`;
-                } else {
-                    body.innerHTML += `<tr><td colspan="9" class="sub-group">${item.group}</td></tr>`;
+        for (const g of groups) {
+            if (g.isHeader) {
+                body.innerHTML += `<tr><td colspan="6" class="group-header">${g.label}</td></tr>`;
+                continue;
+            }
+            body.innerHTML += `<tr><td colspan="6" class="sub-group">${g.label}</td></tr>`;
+            
+            for (const ticker of g.tickers) {
+                log.innerText = `FETCHING: ${ticker}...`;
+                const data = await fetchPerformance(ticker);
+                
+                if (data) {
+                    const c1 = data.d1 >= 0 ? 'pos' : 'neg';
+                    const c5 = data.d5 >= 0 ? 'pos' : 'neg';
+                    const cy = data.ytd >= 0 ? 'pos' : 'neg';
+
+                    body.innerHTML += `
+                        <tr>
+                            <td class="ticker">${ticker}</td>
+                            <td class="price">${data.price.toFixed(2)}</td>
+                            <td class="pct ${c1}">${data.d1}%</td>
+                            <td class="pct ${c5}">${data.d5}%</td>
+                            <td style="font-size:14px">${data.d1 >= 0 ? '📈' : '📉'}</td>
+                            <td class="pct ${cy}">${data.ytd}%</td>
+                        </tr>
+                    `;
                 }
-                currentGroup = item.group;
+                // Wait 15 seconds to respect 5 calls/min limit
+                await new Promise(r => setTimeout(r, 15000));
             }
-
-            const data = await fetchData(item.symbol);
-            if (data) {
-                const price = parseFloat(data["05. price"]).toFixed(2);
-                const changePctStr = data["10. change percent"];
-                const changePct = parseFloat(changePctStr);
-                const colorClass = changePct >= 0 ? 'pos' : 'neg';
-                const trendIcon = changePct >= 0 ? '📈' : '📉';
-
-                body.innerHTML += `
-                    <tr>
-                        <td class="ticker">${item.symbol}</td>
-                        <td class="name">${item.name}</td>
-                        <td class="price">${price}</td>
-                        <td class="pct ${colorClass}">${changePctStr}</td>
-                        <td class="pct">--</td> <td>--</td>
-                        <td>--</td>
-                        <td>${trendIcon}</td>
-                        <td class="pct">--</td> 
-                    </tr>
-                `;
-            }
-            // Throttle requests to respect Free Tier (5 calls per minute / 25 per day)
-            await new Promise(resolve => setTimeout(resolve, 12000)); 
         }
-        document.getElementById('api-status').innerText = "LIVE DATA // ALPHA VANTAGE";
+        log.innerText = "STREAM COMPLETE";
+        log.style.color = "#22c55e";
     }
 
-    buildTable();
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toISOString().substr(11, 8) + " UTC";
+    }, 1000);
+
+    init();
 </script>
 </body>
 </html>
