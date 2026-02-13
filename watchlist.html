@@ -2,26 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Terminal | Google Engine</title>
+    <title>Sovereign Terminal | Replicated Replica</title>
     <style>
         :root {
-            --bg: #ffffff; --header-bg: #e2e2e2; --sub-header: #fdb927;
-            --pos-bg: #c6efce; --pos-text: #006100; --neg-bg: #ffc7ce; --neg-text: #9c0006;
-            --border: #d1d1d1;
+            --bg: #ffffff; --sub-header: #fdb927; --pos-bg: #c6efce; 
+            --pos-text: #006100; --neg-bg: #ffc7ce; --neg-text: #9c0006; --border: #d1d1d1;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
-        .container { background: white; max-width: 1100px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .main-title { font-size: 24px; font-weight: 900; padding: 10px 15px; border-bottom: 2px solid black; display: flex; justify-content: space-between; align-items: center; }
-        .group-header { background: var(--sub-header); font-weight: bold; font-size: 13px; padding: 5px 15px; border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; margin: 0; }
+        .container { background: white; max-width: 1200px; margin: 0 auto; border: 2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .main-title { font-size: 26px; font-weight: 900; padding: 15px; border-bottom: 3px solid #000; display: flex; justify-content: space-between; align-items: center; }
+        .group-header { background: var(--sub-header); font-weight: 900; font-size: 14px; padding: 6px 15px; border-top: 2px solid #000; border-bottom: 2px solid #000; text-align: left; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead th { background: var(--header-bg); border: 1px solid var(--border); padding: 8px; font-size: 11px; }
+        thead th { background: #e2e2e2; border: 1px solid var(--border); padding: 8px; font-size: 11px; font-weight: 800; }
         .ytd-header { background: #000; color: #fff; }
-        td { padding: 8px; font-size: 13px; border: 1px solid var(--border); text-align: center; }
-        .ticker { font-weight: bold; text-align: left; padding-left: 15px; }
-        .price { font-family: monospace; font-weight: bold; text-align: right; padding-right: 15px; }
-        .pct { font-weight: 600; text-align: right; padding-right: 10px; }
-        .pos { background-color: var(--pos-bg); color: var(--pos-text); }
-        .neg { background-color: var(--neg-bg); color: var(--neg-text); }
+        td { padding: 8px; font-size: 12px; border: 1px solid var(--border); text-align: center; }
+        .ticker { font-weight: bold; text-align: left; padding-left: 10px; color: #000; }
+        .price { font-family: 'Courier New', monospace; font-weight: 800; text-align: right; padding-right: 10px; }
+        .pos { background-color: var(--pos-bg); color: var(--pos-text); font-weight: bold; }
+        .neg { background-color: var(--neg-bg); color: var(--neg-text); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -29,65 +27,69 @@
 <div class="container">
     <div class="main-title">
         <span>Market Watchlist</span>
-        <span id="sync-status" style="font-size: 11px; font-weight: normal; color: #666;">Syncing Google Finance...</span>
+        <span id="sync-time" style="font-size: 12px; font-weight: normal; color: #666;">Syncing...</span>
     </div>
 
-    <div id="table-output">
-        <div style="padding: 50px; text-align: center; color: #999;">Connecting to Google Sheets Engine...</div>
+    <div id="watchlist-render">
+        <div style="padding: 40px; text-align: center;">Establishing Secure Connection to Google Finance Engine...</div>
     </div>
 </div>
 
 <script>
-    // 1. PASTE YOUR SHEET ID HERE
     const SHEET_ID = '1dRwSDyMGotW_RArjMCAEaDBhsTJyz92nUggktC2lBGw'; 
     const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-    async function updateTerminal() {
+    async function updateWatchlist() {
         try {
             const response = await fetch(DATA_URL);
             const csv = await response.text();
             const rows = csv.split('\n').map(r => r.split(',').map(c => c.replace(/"/g, ''))).slice(1);
 
             let html = `<table><thead><tr>
-                <th style="width:120px">Ticker</th>
-                <th>Price</th>
+                <th style="width:70px">Ticker</th>
+                <th style="width:250px">Name</th>
+                <th style="width:90px">Price</th>
                 <th>1D %</th>
                 <th>5D %</th>
+                <th>REL5</th>
+                <th>REL20</th>
                 <th class="ytd-header">YTD %</th>
             </tr></thead><tbody>`;
 
-            html += `<tr><td colspan="5" class="group-header">1. EQUITIES & CHINA FOCUS</td></tr>`;
+            html += `<tr><td colspan="8" class="group-header">1. EQUITIES</td></tr>`;
 
             rows.forEach(row => {
                 if (!row[0]) return;
                 const ticker = row[0].includes(':') ? row[0].split(':')[1] : row[0];
-                const price = parseFloat(row[1]).toFixed(2);
-                const d1 = (parseFloat(row[2]) * 100).toFixed(2);
-                const d5 = (parseFloat(row[3]) * 100).toFixed(2);
-                const ytd = (parseFloat(row[4]) * 100).toFixed(2);
+                const price = parseFloat(row[2]).toFixed(2);
+                const d1 = (parseFloat(row[3]) * 100).toFixed(2);
+                const d5 = (parseFloat(row[4]) * 100).toFixed(2);
+                const rel5 = parseFloat(row[5]).toFixed(2);
+                const rel20 = parseFloat(row[6]).toFixed(2);
+                const ytd = (parseFloat(row[7]) * 100).toFixed(2);
 
                 html += `
                     <tr>
                         <td class="ticker">${ticker}</td>
+                        <td style="text-align:left; font-size:10px">${row[1]}</td>
                         <td class="price">${price}</td>
-                        <td class="pct ${d1 >= 0 ? 'pos' : 'neg'}">${d1}%</td>
-                        <td class="pct ${d5 >= 0 ? 'pos' : 'neg'}">${d5}%</td>
-                        <td class="pct ${ytd >= 0 ? 'pos' : 'neg'}">${ytd}%</td>
+                        <td class="${d1 >= 0 ? 'pos' : 'neg'}">${d1}%</td>
+                        <td class="${d5 >= 0 ? 'pos' : 'neg'}">${d5}%</td>
+                        <td class="${rel5 >= 0 ? 'pos' : 'neg'}">${rel5}</td>
+                        <td class="${rel20 >= 0 ? 'pos' : 'neg'}">${rel20}</td>
+                        <td class="${ytd >= 0 ? 'pos' : 'neg'}">${ytd}%</td>
                     </tr>
                 `;
             });
 
             html += `</tbody></table>`;
-            document.getElementById('table-output').innerHTML = html;
-            document.getElementById('sync-status').innerText = 'Last Sync: ' + new Date().toLocaleTimeString();
-        } catch (e) {
-            document.getElementById('table-output').innerHTML = '<div style="padding:20px; color:red;">Connection Error: Ensure Sheet is shared as "Anyone with link can view".</div>';
-        }
+            document.getElementById('watchlist-render').innerHTML = html;
+            document.getElementById('sync-time').innerText = 'Last Sync: ' + new Date().toLocaleTimeString();
+        } catch (e) { console.error(e); }
     }
 
-    // High-frequency auto-refresh (every 60 seconds)
-    setInterval(updateTerminal, 60000);
-    updateTerminal();
+    setInterval(updateWatchlist, 60000);
+    updateWatchlist();
 </script>
 </body>
 </html>
