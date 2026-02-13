@@ -2,116 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Terminal | No-API Edition</title>
+    <title>Sovereign Terminal | Unbreakable Edition</title>
     <style>
         :root {
-            --bg: #06090f; --panel: #131722; --accent: #2962ff; --border: #2a2e39;
-            --text: #d1d4dc; --pos: #22c55e; --neg: #ef4444; --sub: #fdb927;
+            --bg: #ffffff; --header-bg: #e2e2e2; --sub-header: #fdb927;
+            --text-dark: #000000; --border: #d1d1d1;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
-        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { background: white; max-width: 1100px; margin: 0 auto; border: 1px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .main-title { font-size: 24px; font-weight: 900; padding: 10px 15px; border-bottom: 2px solid black; }
+        .sub-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 11px; font-weight: bold; background: white; border-bottom: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { background: #1c202e; padding: 10px; font-size: 10px; color: #787b86; text-transform: uppercase; border: 1px solid var(--border); }
-        .group-header { background: var(--sub); color: #000; font-weight: bold; font-size: 12px; padding: 5px 15px; border-top: 1px solid #000; }
-        td { padding: 10px; font-size: 13px; border: 1px solid var(--border); text-align: center; }
-        .ticker { font-weight: bold; text-align: left; color: var(--accent); }
-        .price { font-family: monospace; font-weight: bold; text-align: right; }
-        .up { color: var(--pos); } .down { color: var(--neg); }
-        .loading-text { font-size: 11px; color: #555; font-style: italic; }
+        thead th { background: var(--header-bg); border: 1px solid var(--border); padding: 5px; font-size: 11px; text-align: center; }
+        .group-header { background: var(--sub-header); font-weight: bold; font-size: 13px; padding: 4px 15px; border-top: 1px solid black; border-bottom: 1px solid black; }
+        td { padding: 0; height: 45px; border: 1px solid var(--border); vertical-align: middle; }
+        .ticker-label { padding-left: 10px; font-weight: bold; font-size: 13px; border-right: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="logo">SOVEREIGN // NO-API TERMINAL</div>
-        <div id="status" style="font-size: 11px; color: #787b86;">INITIALIZING SCRAPER...</div>
+    <div class="main-title">Market Watchlist</div>
+    <div class="sub-bar">
+        <span>2026-02-12</span>
+        <span style="color:blue">SOVEREIGN CAPITAL HUB</span>
+        <span style="color:red">REAL-TIME // NO-API ENGINE</span>
     </div>
 
     <table>
         <thead>
             <tr>
                 <th style="width:100px">Ticker</th>
-                <th>Price</th>
-                <th>1D %</th>
-                <th>5D %</th>
-                <th>YTD %</th>
+                <th>Live Quote & Performance (1D / 5D / YTD)</th>
             </tr>
         </thead>
-        <tbody id="watchlist-body">
-            </tbody>
-    </table>
-</div>
-
-<script>
-    const tickerGroups = [
-        { label: "1. EQUITIES", tickers: ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ"] },
-        { label: "China Market", tickers: ["MCHI", "ASHR"] }
-    ];
-
-    // Using a public CORS proxy to bypass Yahoo's security blocks
-    const proxy = "https://api.allorigins.win/get?url=";
-
-    async function scrapeYahoo(symbol) {
-        try {
-            const target = encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
-            const response = await fetch(`${proxy}${target}`);
-            const json = await response.json();
-            const data = JSON.parse(json.contents).quoteResponse.result[0];
-
-            if (!data) return null;
-
-            return {
-                symbol: data.symbol,
-                price: data.regularMarketPrice.toFixed(2),
-                d1: data.regularMarketChangePercent.toFixed(2),
-                // Note: Yahoo's quote API provides 50D and 200D averages; 
-                // for true 5D/YTD without a key, we use the 52-week change as a proxy or fetch history
-                d5: (data.fiftyDayAverageChangePercent * 10).toFixed(2), // Rough estimate for momentum
-                ytd: data.ytdReturn ? data.ytdReturn.toFixed(2) : (data.fiftyTwoWeekRange.split(' - ')[0] > 0 ? "CALC..." : "0.00")
-            };
-        } catch (err) {
-            console.error(err);
-            return null;
-        }
-    }
-
-    async function render() {
-        const body = document.getElementById('watchlist-body');
-        const status = document.getElementById('status');
-        
-        for (const group of tickerGroups) {
-            body.innerHTML += `<tr><td colspan="5" class="group-header">${group.label}</td></tr>`;
-            
-            for (const s of group.tickers) {
-                status.innerText = `SCRAPING: ${s}...`;
-                const rowId = `row-${s}`;
-                body.innerHTML += `<tr id="${rowId}"><td class="ticker">${s}</td><td colspan="4" class="loading-text">Requesting Proxy...</td></tr>`;
-                
-                const data = await scrapeYahoo(s);
-                const row = document.getElementById(rowId);
-                
-                if (data) {
-                    row.innerHTML = `
-                        <td class="ticker">${data.symbol}</td>
-                        <td class="price">$${data.price}</td>
-                        <td class="${data.d1 >= 0 ? 'up' : 'down'}">${data.d1}%</td>
-                        <td class="${data.d5 >= 0 ? 'up' : 'down'}">${data.d5}%</td>
-                        <td class="${data.ytd !== "CALC..." ? (data.ytd >= 0 ? 'up' : 'down') : ''}">${data.ytd}%</td>
-                    `;
-                } else {
-                    row.innerHTML = `<td class="ticker">${s}</td><td colspan="4" style="color:#444">Data Unavailable</td>`;
-                }
-                // Small delay to be polite to the proxy
-                await new Promise(r => setTimeout(r, 500));
-            }
-        }
-        status.innerText = "SCRAPE COMPLETE // " + new Date().toLocaleTimeString();
-    }
-
-    render();
-</script>
-</body>
-</html>
+        <tbody>
+            <tr><td colspan="2" class="group-header">1. EQUITIES - GLOBAL & U.S.</td></tr>
+            <tr>
+                <td class="ticker-label">SPY</td>
+                <td>
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        {
+                        "symbol": "AMEX:SPY", "width": "100%", "height": "100%", "locale": "en",
+                        "dateRange": "12M", "colorTheme": "light", "trendLineColor": "rgba(41, 98, 255, 1)",
+                        "underlayColor": "rgba(255, 255, 255, 0)", "isTransparent": true, "autosize": true
+                        }
+                        </script>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ticker-label">ACWI</td>
+                <td>
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        {
+                        "symbol": "AMEX:ACWI", "width": "100%", "height": "100%", "locale": "en",
+                        "dateRange": "12M", "colorTheme": "light", "isTransparent": true
+                        }
+                        </script>
+                    </div>
+                </td>
+            </tr>
+            <tr><td colspan="2" class="group-header">CHINA MARKET</td></tr>
+            <tr>
+                <td class="ticker-label">ASHR</td>
+                <td>
+                    <div class="tradingview-widget-container">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+                        {
+                        "symbol": "AMEX:ASHR", "width": "100%", "height": "100%", "locale": "en",
+                        "dateRange": "12M", "colorTheme": "light", "isTransparent": true
+                        }
+                        </script>
+                    </div>
+                </td>
+            </tr>
