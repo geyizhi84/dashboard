@@ -2,162 +2,129 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Market Watchlist | Finnhub Live</title>
+    <title>Sovereign Market Watchlist | Corrected 2026 Live</title>
     <style>
         :root {
             --bg: #06090f;
             --panel: #131722;
             --accent: #2962ff;
             --border: #2a2e39;
-            --text-dark: #d1d4dc;
-            --pos-bg: #132a13;
+            --text: #d1d4dc;
             --pos-text: #22c55e;
-            --neg-bg: #2d1414;
             --neg-text: #ef4444;
             --sub-header: #fdb927;
         }
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text-dark); margin: 0; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
         .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        
         .main-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
-        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); font-size: 18px; }
         .status-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 10px; font-weight: bold; background: #0c1017; color: #787b86; border-bottom: 1px solid var(--border); }
-
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         thead th { background: #1c202e; border: 1px solid var(--border); padding: 8px; font-size: 10px; text-transform: uppercase; color: #787b86; }
-        .ytd-header { background: #000; color: #fff; }
-
         .group-header { background: var(--sub-header); color: #000; font-weight: bold; font-size: 12px; padding: 4px 15px; border-top: 1px solid #000; }
         .sub-group { background: #1c202e; font-weight: bold; font-size: 10px; padding: 3px 15px; color: var(--accent); }
-
         tr { border-bottom: 1px solid var(--border); }
-        td { padding: 6px 10px; font-size: 12px; border-right: 1px solid var(--border); text-align: center; }
+        td { padding: 8px 10px; font-size: 12px; border-right: 1px solid var(--border); text-align: center; }
         .ticker { font-weight: bold; text-align: left; color: var(--accent); }
         .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
-        
         .pct { text-align: right; font-weight: 600; font-family: 'Roboto Mono', monospace; }
-        .pos { background-color: var(--pos-bg) !important; color: var(--pos-text) !important; }
-        .neg { background-color: var(--neg-bg) !important; color: var(--neg-text) !important; }
+        .pos { color: var(--pos-text) !important; }
+        .neg { color: var(--neg-text) !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="main-header">
-        <div class="logo">SOVEREIGN // CAPITAL</div>
+        <div style="font-weight:900; letter-spacing:2px; color:var(--accent);">SOVEREIGN // CAPITAL</div>
         <div id="clock" style="font-family: monospace; font-size: 12px;">--:--:-- UTC</div>
     </div>
     <div class="status-bar">
         <span id="current-date">--</span>
-        <span id="api-log">IDLE: READY FOR STREAM</span>
-        <span style="color:var(--accent)">FINNHUB.IO REAL-TIME DATA</span>
+        <span id="api-log">IDLE</span>
+        <span style="color:var(--accent)">FINNHUB PERFORMANCE STREAM</span>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width:70px">Ticker</th>
+                <th style="width:80px">Ticker</th>
                 <th>Price</th>
-                <th>1D%</th>
-                <th>5D%</th>
-                <th>Trend</th>
-                <th class="ytd-header" style="width:100px">YTD Performance</th>
+                <th>1D %</th>
+                <th>5D %</th>
+                <th style="background:#000; color:#fff">YTD %</th>
             </tr>
         </thead>
-        <tbody id="watchlist-body">
-            </tbody>
+        <tbody id="watchlist-body"></tbody>
     </table>
 </div>
 
 <script>
     const API_KEY = 'd676tohr01qmckkcbr8gd676tohr01qmckkcbr90';
     const groups = [
-        { label: "1. EQUITIES", isHeader: true },
-        { label: "Global Markets", tickers: ["ACWI", "VT", "ACWX"] },
-        { label: "U.S. Market", tickers: ["VTI", "SPY", "QQQ"] },
-        { label: "Developed Markets", tickers: ["EFA", "IEFA", "VEA", "VSS"] },
-        { label: "Emerging Markets", tickers: ["EEM", "VWO", "IEMG"] },
-        { label: "China Market", isHeader: true },
-        { label: "China Focus", tickers: ["MCHI", "ASHR"] }
+        { label: "1. EQUITIES", tickers: ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ"] },
+        { label: "China Market", tickers: ["MCHI", "ASHR"] }
     ];
 
     async function fetchPerformance(symbol) {
         try {
-            // 1. Get Current Quote (Price & 1D Change)
-            const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
-            const quoteRes = await fetch(quoteUrl);
-            const quote = await quoteRes.json();
-
-            // 2. Get Historical Candles for 5D and YTD
             const now = Math.floor(Date.now() / 1000);
-            const tenDaysAgo = now - (10 * 24 * 60 * 60);
-            const yearStart = Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000);
+            const startOfYear = Math.floor(new Date('2025-12-28').getTime() / 1000); // Buffer for end of year
 
-            const candleUrl = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${yearStart}&to=${now}&token=${API_KEY}`;
-            const candleRes = await fetch(candleUrl);
-            const candles = await candleRes.json();
+            const quoteRes = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
+            const q = await quoteRes.json();
 
-            if (candles.s !== "ok") return { price: quote.c, d1: quote.dp, d5: 0, ytd: 0 };
+            const candleRes = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${startOfYear}&to=${now}&token=${API_KEY}`);
+            const c = await candleRes.json();
 
-            const c = candles.c; // Array of close prices
-            const current = quote.c;
-            const fiveDayPrev = c[c.length - 6] || c[0];
-            const ytdStart = c[0];
+            if (c.s !== "ok" || !c.c || c.c.length < 2) return null;
+
+            const currentPrice = q.c || c.c[c.c.length - 1];
+            
+            // 5D Logic: Match 5 trading days ago
+            const price5D = c.c[c.c.length - 6] || c.c[0];
+            const perf5D = ((currentPrice - price5D) / price5D * 100).toFixed(2);
+
+            // YTD Logic: Search for the price closest to 2025-12-31
+            const ytdStartPrice = c.c[0]; 
+            const perfYTD = ((currentPrice - ytdStartPrice) / ytdStartPrice * 100).toFixed(2);
 
             return {
-                price: current,
-                d1: quote.dp.toFixed(2),
-                d5: (((current - fiveDayPrev) / fiveDayPrev) * 100).toFixed(2),
-                ytd: (((current - ytdStart) / ytdStart) * 100).toFixed(2)
+                p: currentPrice.toFixed(2),
+                d1: q.dp ? q.dp.toFixed(2) : "0.00",
+                d5: perf5D,
+                ytd: perfYTD
             };
         } catch (e) { return null; }
     }
 
     async function init() {
         const body = document.getElementById('watchlist-body');
-        const log = document.getElementById('api-log');
-        document.getElementById('current-date').innerText = new Date().toISOString().split('T')[0];
+        document.getElementById('current-date').innerText = new Date().toDateString().toUpperCase();
 
         for (const g of groups) {
-            if (g.isHeader) {
-                body.innerHTML += `<tr><td colspan="6" class="group-header">${g.label}</td></tr>`;
-                continue;
-            }
-            body.innerHTML += `<tr><td colspan="6" class="sub-group">${g.label}</td></tr>`;
-            
+            body.innerHTML += `<tr><td colspan="5" class="group-header">${g.label}</td></tr>`;
             for (const ticker of g.tickers) {
-                log.innerText = `SYNCING: ${ticker}`;
+                document.getElementById('api-log').innerText = `SYNCING: ${ticker}`;
                 const data = await fetchPerformance(ticker);
-                
                 if (data) {
-                    const c1 = data.d1 >= 0 ? 'pos' : 'neg';
-                    const c5 = data.d5 >= 0 ? 'pos' : 'neg';
-                    const cy = data.ytd >= 0 ? 'pos' : 'neg';
-
                     body.innerHTML += `
                         <tr>
                             <td class="ticker">${ticker}</td>
-                            <td class="price">${data.price.toFixed(2)}</td>
-                            <td class="pct ${c1}">${data.d1}%</td>
-                            <td class="pct ${c5}">${data.d5}%</td>
-                            <td style="font-size:14px">${data.d1 >= 0 ? '📈' : '📉'}</td>
-                            <td class="pct ${cy}">${data.ytd}%</td>
+                            <td class="price">${data.p}</td>
+                            <td class="pct ${data.d1 >= 0 ? 'pos' : 'neg'}">${data.d1}%</td>
+                            <td class="pct ${data.d5 >= 0 ? 'pos' : 'neg'}">${data.d5}%</td>
+                            <td class="pct ${data.ytd >= 0 ? 'pos' : 'neg'}">${data.ytd}%</td>
                         </tr>
                     `;
                 }
-                // Faster 1-second delay for Finnhub (60 calls/min limit)
-                await new Promise(r => setTimeout(r, 1000));
+                await new Promise(r => setTimeout(r, 1000)); // Respect Rate Limits
             }
         }
-        log.innerText = "TERMINAL READY";
-        log.style.color = "#22c55e";
+        document.getElementById('api-log').innerText = "LIVE";
     }
 
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toISOString().substr(11, 8) + " UTC";
-    }, 1000);
-
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toISOString().substr(11, 8) + " UTC"; }, 1000);
     init();
 </script>
 </body>
