@@ -2,22 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Terminal | Replicated Replica</title>
+    <title>Sovereign Terminal | Corrected Replica</title>
     <style>
         :root {
             --bg: #ffffff; --sub-header: #fdb927; --pos-bg: #c6efce; 
             --pos-text: #006100; --neg-bg: #ffc7ce; --neg-text: #9c0006; --border: #d1d1d1;
         }
         body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; margin: 0; }
-        .container { background: white; max-width: 1200px; margin: 0 auto; border: 2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .main-title { font-size: 26px; font-weight: 900; padding: 15px; border-bottom: 3px solid #000; display: flex; justify-content: space-between; align-items: center; }
-        .group-header { background: var(--sub-header); font-weight: 900; font-size: 14px; padding: 6px 15px; border-top: 2px solid #000; border-bottom: 2px solid #000; text-align: left; }
+        .container { background: white; max-width: 1200px; margin: 0 auto; border: 2px solid #000; }
+        .main-title { font-size: 26px; font-weight: 900; padding: 15px; border-bottom: 3px solid #000; display: flex; justify-content: space-between; }
+        .group-header { background: var(--sub-header); font-weight: 900; font-size: 14px; padding: 6px 15px; border-top: 2px solid #000; border-bottom: 2px solid #000; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead th { background: #e2e2e2; border: 1px solid var(--border); padding: 8px; font-size: 11px; font-weight: 800; }
+        thead th { background: #e2e2e2; border: 1px solid var(--border); padding: 8px; font-size: 11px; }
         .ytd-header { background: #000; color: #fff; }
         td { padding: 8px; font-size: 12px; border: 1px solid var(--border); text-align: center; }
-        .ticker { font-weight: bold; text-align: left; padding-left: 10px; color: #000; }
-        .price { font-family: 'Courier New', monospace; font-weight: 800; text-align: right; padding-right: 10px; }
+        .ticker { font-weight: bold; text-align: left; padding-left: 10px; }
+        .price { font-family: 'Courier New', monospace; font-weight: 800; text-align: right; }
         .pos { background-color: var(--pos-bg); color: var(--pos-text); font-weight: bold; }
         .neg { background-color: var(--neg-bg); color: var(--neg-text); font-weight: bold; }
     </style>
@@ -31,19 +31,26 @@
     </div>
 
     <div id="watchlist-render">
-        <div style="padding: 40px; text-align: center;">Establishing Secure Connection to Google Finance Engine...</div>
+        <div style="padding: 40px; text-align: center;">Refreshing Data Pipeline...</div>
     </div>
 </div>
 
 <script>
+    // 1. RE-VERIFY YOUR SHEET ID
     const SHEET_ID = '1dRwSDyMGotW_RArjMCAEaDBhsTJyz92nUggktC2lBGw'; 
-    const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+    
+    // 2. UPDATED URL: Force all columns (A-H) and avoid parsing errors
+    const DATA_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&tq=SELECT%20*`;
 
     async function updateWatchlist() {
         try {
             const response = await fetch(DATA_URL);
             const csv = await response.text();
-            const rows = csv.split('\n').map(r => r.split(',').map(c => c.replace(/"/g, ''))).slice(1);
+            
+            // IMPROVED PARSER: Handles commas inside quoted strings (common in Names)
+            const rows = csv.split('\n').map(r => {
+                return r.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+            }).map(cols => cols.map(c => c.replace(/"/g, ''))).slice(1);
 
             let html = `<table><thead><tr>
                 <th style="width:70px">Ticker</th>
@@ -59,19 +66,21 @@
             html += `<tr><td colspan="8" class="group-header">1. EQUITIES</td></tr>`;
 
             rows.forEach(row => {
-                if (!row[0]) return;
+                if (row.length < 8) return; // Ensure all columns exist
+
                 const ticker = row[0].includes(':') ? row[0].split(':')[1] : row[0];
-                const price = parseFloat(row[2]).toFixed(2);
-                const d1 = (parseFloat(row[3]) * 100).toFixed(2);
-                const d5 = (parseFloat(row[4]) * 100).toFixed(2);
-                const rel5 = parseFloat(row[5]).toFixed(2);
-                const rel20 = parseFloat(row[6]).toFixed(2);
-                const ytd = (parseFloat(row[7]) * 100).toFixed(2);
+                const name   = row[1];
+                const price  = row[2];
+                const d1     = (parseFloat(row[3]) * 100).toFixed(2);
+                const d5     = (parseFloat(row[4]) * 100).toFixed(2);
+                const rel5   = parseFloat(row[5]).toFixed(2);
+                const rel20  = parseFloat(row[6]).toFixed(2);
+                const ytd    = (parseFloat(row[7]) * 100).toFixed(2);
 
                 html += `
                     <tr>
                         <td class="ticker">${ticker}</td>
-                        <td style="text-align:left; font-size:10px">${row[1]}</td>
+                        <td style="text-align:left; font-size:10px">${name}</td>
                         <td class="price">${price}</td>
                         <td class="${d1 >= 0 ? 'pos' : 'neg'}">${d1}%</td>
                         <td class="${d5 >= 0 ? 'pos' : 'neg'}">${d5}%</td>
@@ -85,7 +94,7 @@
             html += `</tbody></table>`;
             document.getElementById('watchlist-render').innerHTML = html;
             document.getElementById('sync-time').innerText = 'Last Sync: ' + new Date().toLocaleTimeString();
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Data Sync Failure", e); }
     }
 
     setInterval(updateWatchlist, 60000);
