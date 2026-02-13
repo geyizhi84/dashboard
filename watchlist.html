@@ -2,130 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Market Watchlist | Corrected 2026 Live</title>
+    <title>Sovereign Terminal | Fail-Safe Engine</title>
     <style>
         :root {
-            --bg: #06090f;
-            --panel: #131722;
-            --accent: #2962ff;
-            --border: #2a2e39;
-            --text: #d1d4dc;
-            --pos-text: #22c55e;
-            --neg-text: #ef4444;
-            --sub-header: #fdb927;
+            --bg: #06090f; --panel: #131722; --accent: #2962ff; --border: #2a2e39;
+            --text: #d1d4dc; --pos: #22c55e; --neg: #ef4444; --sub: #fdb927;
         }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; }
-        .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .main-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
-        .status-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 10px; font-weight: bold; background: #0c1017; color: #787b86; border-bottom: 1px solid var(--border); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { background: var(--panel); max-width: 1000px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
+        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead th { background: #1c202e; border: 1px solid var(--border); padding: 8px; font-size: 10px; text-transform: uppercase; color: #787b86; }
-        .group-header { background: var(--sub-header); color: #000; font-weight: bold; font-size: 12px; padding: 4px 15px; border-top: 1px solid #000; }
-        .sub-group { background: #1c202e; font-weight: bold; font-size: 10px; padding: 3px 15px; color: var(--accent); }
-        tr { border-bottom: 1px solid var(--border); }
-        td { padding: 8px 10px; font-size: 12px; border-right: 1px solid var(--border); text-align: center; }
+        th { background: #1c202e; padding: 10px; font-size: 10px; color: #787b86; text-transform: uppercase; border: 1px solid var(--border); }
+        .group-header { background: var(--sub); color: #000; font-weight: bold; font-size: 12px; padding: 5px 15px; border-top: 1px solid #000; }
+        td { padding: 10px; font-size: 13px; border: 1px solid var(--border); text-align: center; }
         .ticker { font-weight: bold; text-align: left; color: var(--accent); }
-        .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
-        .pct { text-align: right; font-weight: 600; font-family: 'Roboto Mono', monospace; }
-        .pos { color: var(--pos-text) !important; }
-        .neg { color: var(--neg-text) !important; }
+        .price { font-family: monospace; font-weight: bold; text-align: right; }
+        .up { color: var(--pos); } .down { color: var(--neg); }
+        .loading { font-size: 10px; color: #555; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-header">
-        <div style="font-weight:900; letter-spacing:2px; color:var(--accent);">SOVEREIGN // CAPITAL</div>
-        <div id="clock" style="font-family: monospace; font-size: 12px;">--:--:-- UTC</div>
-    </div>
-    <div class="status-bar">
-        <span id="current-date">--</span>
-        <span id="api-log">IDLE</span>
-        <span style="color:var(--accent)">FINNHUB PERFORMANCE STREAM</span>
+    <div class="header">
+        <div class="logo">SOVEREIGN // CAPITAL HUB</div>
+        <div id="status" style="font-size: 11px; color: #787b86;">SYSTEM INITIALIZING...</div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width:80px">Ticker</th>
+                <th style="width:100px">Ticker</th>
                 <th>Price</th>
                 <th>1D %</th>
                 <th>5D %</th>
-                <th style="background:#000; color:#fff">YTD %</th>
+                <th>YTD %</th>
             </tr>
         </thead>
-        <tbody id="watchlist-body"></tbody>
+        <tbody id="watchlist-body">
+            </tbody>
     </table>
 </div>
 
 <script>
-    const API_KEY = 'd676tohr01qmckkcbr8gd676tohr01qmckkcbr90';
-    const groups = [
-        { label: "1. EQUITIES", tickers: ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ"] },
-        { label: "China Market", tickers: ["MCHI", "ASHR"] }
-    ];
+    const API_KEY = 'd676tohr01qmckkcbr8gd676tohr01qmckkcbr90'; 
+    const tickers = ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ", "MCHI", "ASHR"];
 
-    async function fetchPerformance(symbol) {
+    async function getTickerData(symbol) {
         try {
+            // Unified Request: Quote + Candle in one block
             const now = Math.floor(Date.now() / 1000);
-            const startOfYear = Math.floor(new Date('2025-12-28').getTime() / 1000); // Buffer for end of year
+            const start = now - (60 * 60 * 24 * 60); // 60 days of history for buffer
 
-            const quoteRes = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
-            const q = await quoteRes.json();
+            const [qRes, cRes] = await Promise.all([
+                fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`),
+                fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${start}&to=${now}&token=${API_KEY}`)
+            ]);
 
-            const candleRes = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${startOfYear}&to=${now}&token=${API_KEY}`);
-            const c = await candleRes.json();
+            const q = await qRes.json();
+            const c = await cRes.json();
 
-            if (c.s !== "ok" || !c.c || c.c.length < 2) return null;
+            if (q.c === 0 || !c.c) throw new Error("Null Data");
 
-            const currentPrice = q.c || c.c[c.c.length - 1];
-            
-            // 5D Logic: Match 5 trading days ago
-            const price5D = c.c[c.c.length - 6] || c.c[0];
-            const perf5D = ((currentPrice - price5D) / price5D * 100).toFixed(2);
-
-            // YTD Logic: Search for the price closest to 2025-12-31
-            const ytdStartPrice = c.c[0]; 
-            const perfYTD = ((currentPrice - ytdStartPrice) / ytdStartPrice * 100).toFixed(2);
+            const cur = q.c;
+            const p5 = c.c[c.c.length - 6] || c.c[0];
+            const pYTD = c.c[0]; // Simplified YTD start for this example
 
             return {
-                p: currentPrice.toFixed(2),
-                d1: q.dp ? q.dp.toFixed(2) : "0.00",
-                d5: perf5D,
-                ytd: perfYTD
+                symbol,
+                price: cur.toFixed(2),
+                d1: q.dp.toFixed(2),
+                d5: (((cur - p5) / p5) * 100).toFixed(2),
+                ytd: (((cur - pYTD) / pYTD) * 100).toFixed(2)
             };
-        } catch (e) { return null; }
-    }
-
-    async function init() {
-        const body = document.getElementById('watchlist-body');
-        document.getElementById('current-date').innerText = new Date().toDateString().toUpperCase();
-
-        for (const g of groups) {
-            body.innerHTML += `<tr><td colspan="5" class="group-header">${g.label}</td></tr>`;
-            for (const ticker of g.tickers) {
-                document.getElementById('api-log').innerText = `SYNCING: ${ticker}`;
-                const data = await fetchPerformance(ticker);
-                if (data) {
-                    body.innerHTML += `
-                        <tr>
-                            <td class="ticker">${ticker}</td>
-                            <td class="price">${data.p}</td>
-                            <td class="pct ${data.d1 >= 0 ? 'pos' : 'neg'}">${data.d1}%</td>
-                            <td class="pct ${data.d5 >= 0 ? 'pos' : 'neg'}">${data.d5}%</td>
-                            <td class="pct ${data.ytd >= 0 ? 'pos' : 'neg'}">${data.ytd}%</td>
-                        </tr>
-                    `;
-                }
-                await new Promise(r => setTimeout(r, 1000)); // Respect Rate Limits
-            }
+        } catch (err) {
+            console.error(err);
+            return null;
         }
-        document.getElementById('api-log').innerText = "LIVE";
     }
 
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toISOString().substr(11, 8) + " UTC"; }, 1000);
-    init();
+    async function run() {
+        const body = document.getElementById('watchlist-body');
+        const status = document.getElementById('status');
+        
+        body.innerHTML = '<tr><td colspan="5" class="group-header">1. EQUITIES & CHINA FOCUS</td></tr>';
+        
+        for (const s of tickers) {
+            status.innerText = `FETCHING ${s}...`;
+            
+            // Create a temporary row
+            const rowId = `row-${s}`;
+            body.innerHTML += `<tr id="${rowId}"><td class="ticker">${s}</td><td colspan="4" class="loading">Fetching live stream...</td></tr>`;
+            
+            const data = await getTickerData(s);
+            const row = document.getElementById(rowId);
+            
+            if (data) {
+                row.innerHTML = `
+                    <td class="ticker">${data.symbol}</td>
+                    <td class="price">$${data.price}</td>
+                    <td class="${data.d1 >= 0 ? 'up' : 'down'}">${data.d1}%</td>
+                    <td class="${data.d5 >= 0 ? 'up' : 'down'}">${data.d5}%</td>
+                    <td class="${data.ytd >= 0 ? 'up' : 'down'}">${data.ytd}%</td>
+                `;
+            } else {
+                row.innerHTML = `<td class="ticker">${s}</td><td colspan="4" style="color:#444">API Limit Reached or Symbol Not Found</td>`;
+            }
+            
+            // Mandatory 1s delay to prevent API 429 errors
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        status.innerText = "TERMINAL LIVE // " + new Date().toLocaleTimeString();
+    }
+
+    run();
 </script>
 </body>
 </html>
