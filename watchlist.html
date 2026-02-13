@@ -2,93 +2,163 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Alpha Terminal</title>
+    <title>Sovereign Market Watchlist | Finnhub Live</title>
     <style>
-        :root { --bg: #06090f; --panel: #131722; --accent: #2962ff; --border: #2a2e39; --text: #d1d4dc; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; border: 1px solid var(--border); background: var(--panel); border-radius: 4px; }
-        .header { padding: 15px; border-bottom: 2px solid var(--accent); font-weight: 800; display: flex; justify-content: space-between; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { text-align: left; padding: 12px; color: #787b86; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #1c252e; font-family: 'Roboto Mono', monospace; }
-        .pos { color: #22c55e; } .neg { color: #ef4444; }
-        .ticker { color: var(--accent); font-weight: bold; font-family: 'Inter', sans-serif; }
+        :root {
+            --bg: #06090f;
+            --panel: #131722;
+            --accent: #2962ff;
+            --border: #2a2e39;
+            --text-dark: #d1d4dc;
+            --pos-bg: #132a13;
+            --pos-text: #22c55e;
+            --neg-bg: #2d1414;
+            --neg-text: #ef4444;
+            --sub-header: #fdb927;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text-dark); margin: 0; padding: 10px; }
+        .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        
+        .main-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
+        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); font-size: 18px; }
+        .status-bar { display: flex; justify-content: space-between; padding: 5px 15px; font-size: 10px; font-weight: bold; background: #0c1017; color: #787b86; border-bottom: 1px solid var(--border); }
+
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        thead th { background: #1c202e; border: 1px solid var(--border); padding: 8px; font-size: 10px; text-transform: uppercase; color: #787b86; }
+        .ytd-header { background: #000; color: #fff; }
+
+        .group-header { background: var(--sub-header); color: #000; font-weight: bold; font-size: 12px; padding: 4px 15px; border-top: 1px solid #000; }
+        .sub-group { background: #1c202e; font-weight: bold; font-size: 10px; padding: 3px 15px; color: var(--accent); }
+
+        tr { border-bottom: 1px solid var(--border); }
+        td { padding: 6px 10px; font-size: 12px; border-right: 1px solid var(--border); text-align: center; }
+        .ticker { font-weight: bold; text-align: left; color: var(--accent); }
+        .price { text-align: right; font-family: 'Roboto Mono', monospace; font-weight: bold; }
+        
+        .pct { text-align: right; font-weight: 600; font-family: 'Roboto Mono', monospace; }
+        .pos { background-color: var(--pos-bg) !important; color: var(--pos-text) !important; }
+        .neg { background-color: var(--neg-bg) !important; color: var(--neg-text) !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <span>SOVEREIGN // LIVE FEED</span>
-        <span id="status" style="font-size: 10px; color: #787b86;">READY</span>
+    <div class="main-header">
+        <div class="logo">SOVEREIGN // CAPITAL</div>
+        <div id="clock" style="font-family: monospace; font-size: 12px;">--:--:-- UTC</div>
     </div>
-    <table id="market-table">
+    <div class="status-bar">
+        <span id="current-date">--</span>
+        <span id="api-log">IDLE: READY FOR STREAM</span>
+        <span style="color:var(--accent)">FINNHUB.IO REAL-TIME DATA</span>
+    </div>
+
+    <table>
         <thead>
             <tr>
-                <th>Symbol</th>
+                <th style="width:70px">Ticker</th>
                 <th>Price</th>
-                <th>Change %</th>
-                <th>Volume</th>
+                <th>1D%</th>
+                <th>5D%</th>
+                <th>Trend</th>
+                <th class="ytd-header" style="width:100px">YTD Performance</th>
             </tr>
         </thead>
-        <tbody id="table-body">
+        <tbody id="watchlist-body">
             </tbody>
     </table>
 </div>
 
 <script>
-    const API_KEY = 'F2T5EKCV5X2Y57HW';
-    const TICKERS = ['SPY', 'QQQ', 'BTCUSD', 'GOLD']; // Note: BTCUSD and GOLD depend on Alpha Vantage coverage
+    const API_KEY = 'd676tohr01qmckkcbr8gd676tohr01qmckkcbr90';
+    const groups = [
+        { label: "1. EQUITIES", isHeader: true },
+        { label: "Global Markets", tickers: ["ACWI", "VT", "ACWX"] },
+        { label: "U.S. Market", tickers: ["VTI", "SPY", "QQQ"] },
+        { label: "Developed Markets", tickers: ["EFA", "IEFA", "VEA", "VSS"] },
+        { label: "Emerging Markets", tickers: ["EEM", "VWO", "IEMG"] },
+        { label: "China Market", isHeader: true },
+        { label: "China Focus", tickers: ["MCHI", "ASHR"] }
+    ];
 
-    async function fetchQuote(symbol) {
-        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`;
+    async function fetchPerformance(symbol) {
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            return data["Global Quote"];
-        } catch (e) {
-            console.error("Fetch error for " + symbol, e);
-            return null;
-        }
+            // 1. Get Current Quote (Price & 1D Change)
+            const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`;
+            const quoteRes = await fetch(quoteUrl);
+            const quote = await quoteRes.json();
+
+            // 2. Get Historical Candles for 5D and YTD
+            const now = Math.floor(Date.now() / 1000);
+            const tenDaysAgo = now - (10 * 24 * 60 * 60);
+            const yearStart = Math.floor(new Date(new Date().getFullYear(), 0, 1).getTime() / 1000);
+
+            const candleUrl = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${yearStart}&to=${now}&token=${API_KEY}`;
+            const candleRes = await fetch(candleUrl);
+            const candles = await candleRes.json();
+
+            if (candles.s !== "ok") return { price: quote.c, d1: quote.dp, d5: 0, ytd: 0 };
+
+            const c = candles.c; // Array of close prices
+            const current = quote.c;
+            const fiveDayPrev = c[c.length - 6] || c[0];
+            const ytdStart = c[0];
+
+            return {
+                price: current,
+                d1: quote.dp.toFixed(2),
+                d5: (((current - fiveDayPrev) / fiveDayPrev) * 100).toFixed(2),
+                ytd: (((current - ytdStart) / ytdStart) * 100).toFixed(2)
+            };
+        } catch (e) { return null; }
     }
 
-    async function updateDashboard() {
-        const tbody = document.getElementById('table-body');
-        const status = document.getElementById('status');
-        status.innerText = "REFRESHING...";
-        
-        // Clear existing rows
-        tbody.innerHTML = '';
+    async function init() {
+        const body = document.getElementById('watchlist-body');
+        const log = document.getElementById('api-log');
+        document.getElementById('current-date').innerText = new Date().toISOString().split('T')[0];
 
-        for (const symbol of TICKERS) {
-            const quote = await fetchQuote(symbol);
-            if (!quote || !quote["05. price"]) continue;
+        for (const g of groups) {
+            if (g.isHeader) {
+                body.innerHTML += `<tr><td colspan="6" class="group-header">${g.label}</td></tr>`;
+                continue;
+            }
+            body.innerHTML += `<tr><td colspan="6" class="sub-group">${g.label}</td></tr>`;
+            
+            for (const ticker of g.tickers) {
+                log.innerText = `SYNCING: ${ticker}`;
+                const data = await fetchPerformance(ticker);
+                
+                if (data) {
+                    const c1 = data.d1 >= 0 ? 'pos' : 'neg';
+                    const c5 = data.d5 >= 0 ? 'pos' : 'neg';
+                    const cy = data.ytd >= 0 ? 'pos' : 'neg';
 
-            const price = parseFloat(quote["05. price"]).toFixed(2);
-            const changePct = quote["10. change percent"];
-            const isPos = !changePct.includes('-');
-
-            const row = `
-                <tr>
-                    <td class="ticker">${symbol}</td>
-                    <td>${price}</td>
-                    <td class="${isPos ? 'pos' : 'neg'}">${changePct}</td>
-                    <td style="color:#787b86">${parseInt(quote["06. volume"]).toLocaleString()}</td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-
-            // Free Tier throttle: Alpha Vantage free keys have a per-minute limit.
-            // We wait 1 second between requests to be safe.
-            await new Promise(r => setTimeout(r, 1000));
+                    body.innerHTML += `
+                        <tr>
+                            <td class="ticker">${ticker}</td>
+                            <td class="price">${data.price.toFixed(2)}</td>
+                            <td class="pct ${c1}">${data.d1}%</td>
+                            <td class="pct ${c5}">${data.d5}%</td>
+                            <td style="font-size:14px">${data.d1 >= 0 ? '📈' : '📉'}</td>
+                            <td class="pct ${cy}">${data.ytd}%</td>
+                        </tr>
+                    `;
+                }
+                // Faster 1-second delay for Finnhub (60 calls/min limit)
+                await new Promise(r => setTimeout(r, 1000));
+            }
         }
-        status.innerText = "UPDATED: " + new Date().toLocaleTimeString();
+        log.innerText = "TERMINAL READY";
+        log.style.color = "#22c55e";
     }
 
-    // Initial load
-    updateDashboard();
-    // Refresh every 5 minutes to stay within free tier limits (5 calls/min)
-    setInterval(updateDashboard, 300000);
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toISOString().substr(11, 8) + " UTC";
+    }, 1000);
+
+    init();
 </script>
 </body>
 </html>
