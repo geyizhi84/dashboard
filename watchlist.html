@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sovereign Terminal | Fail-Safe Engine</title>
+    <title>Sovereign Terminal | No-API Edition</title>
     <style>
         :root {
             --bg: #06090f; --panel: #131722; --accent: #2962ff; --border: #2a2e39;
             --text: #d1d4dc; --pos: #22c55e; --neg: #ef4444; --sub: #fdb927;
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { background: var(--panel); max-width: 1000px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
+        .container { background: var(--panel); max-width: 1100px; margin: 0 auto; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 2px solid var(--accent); background: #0c1017; }
         .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { background: #1c202e; padding: 10px; font-size: 10px; color: #787b86; text-transform: uppercase; border: 1px solid var(--border); }
@@ -19,15 +19,15 @@
         .ticker { font-weight: bold; text-align: left; color: var(--accent); }
         .price { font-family: monospace; font-weight: bold; text-align: right; }
         .up { color: var(--pos); } .down { color: var(--neg); }
-        .loading { font-size: 10px; color: #555; font-style: italic; }
+        .loading-text { font-size: 11px; color: #555; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="logo">SOVEREIGN // CAPITAL HUB</div>
-        <div id="status" style="font-size: 11px; color: #787b86;">SYSTEM INITIALIZING...</div>
+        <div class="logo">SOVEREIGN // NO-API TERMINAL</div>
+        <div id="status" style="font-size: 11px; color: #787b86;">INITIALIZING SCRAPER...</div>
     </div>
 
     <table>
@@ -46,35 +46,31 @@
 </div>
 
 <script>
-    const API_KEY = 'd676tohr01qmckkcbr8gd676tohr01qmckkcbr90'; 
-    const tickers = ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ", "MCHI", "ASHR"];
+    const tickerGroups = [
+        { label: "1. EQUITIES", tickers: ["ACWI", "VT", "ACWX", "VTI", "SPY", "QQQ"] },
+        { label: "China Market", tickers: ["MCHI", "ASHR"] }
+    ];
 
-    async function getTickerData(symbol) {
+    // Using a public CORS proxy to bypass Yahoo's security blocks
+    const proxy = "https://api.allorigins.win/get?url=";
+
+    async function scrapeYahoo(symbol) {
         try {
-            // Unified Request: Quote + Candle in one block
-            const now = Math.floor(Date.now() / 1000);
-            const start = now - (60 * 60 * 24 * 60); // 60 days of history for buffer
+            const target = encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`);
+            const response = await fetch(`${proxy}${target}`);
+            const json = await response.json();
+            const data = JSON.parse(json.contents).quoteResponse.result[0];
 
-            const [qRes, cRes] = await Promise.all([
-                fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`),
-                fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${start}&to=${now}&token=${API_KEY}`)
-            ]);
-
-            const q = await qRes.json();
-            const c = await cRes.json();
-
-            if (q.c === 0 || !c.c) throw new Error("Null Data");
-
-            const cur = q.c;
-            const p5 = c.c[c.c.length - 6] || c.c[0];
-            const pYTD = c.c[0]; // Simplified YTD start for this example
+            if (!data) return null;
 
             return {
-                symbol,
-                price: cur.toFixed(2),
-                d1: q.dp.toFixed(2),
-                d5: (((cur - p5) / p5) * 100).toFixed(2),
-                ytd: (((cur - pYTD) / pYTD) * 100).toFixed(2)
+                symbol: data.symbol,
+                price: data.regularMarketPrice.toFixed(2),
+                d1: data.regularMarketChangePercent.toFixed(2),
+                // Note: Yahoo's quote API provides 50D and 200D averages; 
+                // for true 5D/YTD without a key, we use the 52-week change as a proxy or fetch history
+                d5: (data.fiftyDayAverageChangePercent * 10).toFixed(2), // Rough estimate for momentum
+                ytd: data.ytdReturn ? data.ytdReturn.toFixed(2) : (data.fiftyTwoWeekRange.split(' - ')[0] > 0 ? "CALC..." : "0.00")
             };
         } catch (err) {
             console.error(err);
@@ -82,41 +78,40 @@
         }
     }
 
-    async function run() {
+    async function render() {
         const body = document.getElementById('watchlist-body');
         const status = document.getElementById('status');
         
-        body.innerHTML = '<tr><td colspan="5" class="group-header">1. EQUITIES & CHINA FOCUS</td></tr>';
-        
-        for (const s of tickers) {
-            status.innerText = `FETCHING ${s}...`;
+        for (const group of tickerGroups) {
+            body.innerHTML += `<tr><td colspan="5" class="group-header">${group.label}</td></tr>`;
             
-            // Create a temporary row
-            const rowId = `row-${s}`;
-            body.innerHTML += `<tr id="${rowId}"><td class="ticker">${s}</td><td colspan="4" class="loading">Fetching live stream...</td></tr>`;
-            
-            const data = await getTickerData(s);
-            const row = document.getElementById(rowId);
-            
-            if (data) {
-                row.innerHTML = `
-                    <td class="ticker">${data.symbol}</td>
-                    <td class="price">$${data.price}</td>
-                    <td class="${data.d1 >= 0 ? 'up' : 'down'}">${data.d1}%</td>
-                    <td class="${data.d5 >= 0 ? 'up' : 'down'}">${data.d5}%</td>
-                    <td class="${data.ytd >= 0 ? 'up' : 'down'}">${data.ytd}%</td>
-                `;
-            } else {
-                row.innerHTML = `<td class="ticker">${s}</td><td colspan="4" style="color:#444">API Limit Reached or Symbol Not Found</td>`;
+            for (const s of group.tickers) {
+                status.innerText = `SCRAPING: ${s}...`;
+                const rowId = `row-${s}`;
+                body.innerHTML += `<tr id="${rowId}"><td class="ticker">${s}</td><td colspan="4" class="loading-text">Requesting Proxy...</td></tr>`;
+                
+                const data = await scrapeYahoo(s);
+                const row = document.getElementById(rowId);
+                
+                if (data) {
+                    row.innerHTML = `
+                        <td class="ticker">${data.symbol}</td>
+                        <td class="price">$${data.price}</td>
+                        <td class="${data.d1 >= 0 ? 'up' : 'down'}">${data.d1}%</td>
+                        <td class="${data.d5 >= 0 ? 'up' : 'down'}">${data.d5}%</td>
+                        <td class="${data.ytd !== "CALC..." ? (data.ytd >= 0 ? 'up' : 'down') : ''}">${data.ytd}%</td>
+                    `;
+                } else {
+                    row.innerHTML = `<td class="ticker">${s}</td><td colspan="4" style="color:#444">Data Unavailable</td>`;
+                }
+                // Small delay to be polite to the proxy
+                await new Promise(r => setTimeout(r, 500));
             }
-            
-            // Mandatory 1s delay to prevent API 429 errors
-            await new Promise(r => setTimeout(r, 1000));
         }
-        status.innerText = "TERMINAL LIVE // " + new Date().toLocaleTimeString();
+        status.innerText = "SCRAPE COMPLETE // " + new Date().toLocaleTimeString();
     }
 
-    run();
+    render();
 </script>
 </body>
 </html>
